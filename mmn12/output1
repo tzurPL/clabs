@@ -1,0 +1,68 @@
+Enter pairs of integers in this format: {a, b} , use the space or new line to seperate each pair.
+ Use Enter and then Ctrl D or Ctrl Z to exit.
+The original numbers received are: 1, 2
+
+Calling function findDifferenceAndSum : 
+The difference is: 1
+The sum is: 3
+
+Calling macro DIFF : 
+The difference is : 1
+
+Calling macro SUM : 
+The sum is : 3
+
+The original numbers received are: 3, 5
+
+Calling function findDifferenceAndSum : 
+The difference is: 2
+The sum is: 8
+
+Calling macro DIFF : 
+The difference is : 2
+
+Calling macro SUM : 
+The sum is : 8
+
+The original numbers received are: -6, 7
+
+Calling function findDifferenceAndSum : 
+The difference is: 13
+The sum is: 1
+
+Calling macro DIFF : 
+The difference is : 13
+
+Calling macro SUM : 
+The sum is : 1
+
+The original numbers received are: 11, 3
+
+Calling function findDifferenceAndSum : 
+The difference is: 8
+The sum is: 14
+
+Calling macro DIFF : 
+The difference is : 8
+
+Calling macro SUM : 
+The sum is : 14
+
+The original numbers received are: 15, 3
+
+Calling function findDifferenceAndSum : 
+The difference is: 12
+The sum is: 18
+
+Calling macro DIFF : 
+The difference is : 12
+
+Calling macro SUM : 
+The sum is : 18
+
+The pairs that have been entered are:
+1, 2
+3, 5
+-6, 7
+11, 3
+15, 3

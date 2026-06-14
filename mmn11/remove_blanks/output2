@@ -1,0 +1,6 @@
+The Input string: 
+" il o ve th e op e nu
+The string as received by the function: 
+" il o ve th e op e nu
+The string at the end of the function: 
+"ilovetheopenu"

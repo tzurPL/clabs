@@ -1,0 +1,12 @@
+    read_comp     B   , -3.0  ,   -4.0
+print_comp B
+mult_comp_real B, 0
+mult_comp_img B, 0.0
+abs_comp B
+read_comp C, 0, 0
+add_comp B, C
+mult_comp_comp B, C
+undefined_command A, B
+print_comp A,
+stop extraneous text
+stop

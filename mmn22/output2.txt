@@ -1,0 +1,23 @@
+Complex number calc
+Enter commands for the calculator to execute
+This is the command list:
+--------------------------------------------------
+read_comp
+print_comp
+add_comp
+sub_comp
+mult_comp_real
+mult_comp_img
+mult_comp_comp
+abs_comp
+--------------------------------------------------
+
+-3.00 + (-4.00)i
+-0.00 + (-0.00)i
+0.00 + (-0.00)i
+5.00
+-3.00 + (-4.00)i
+0.00 + (-0.00)i
+Undefined command name
+Extraneous text after end of command
+Extraneous text after end of command

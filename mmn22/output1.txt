@@ -1,0 +1,28 @@
+Complex number calc
+Enter commands for the calculator to execute
+This is the command list:
+--------------------------------------------------
+read_comp
+print_comp
+add_comp
+sub_comp
+mult_comp_real
+mult_comp_img
+mult_comp_comp
+abs_comp
+--------------------------------------------------
+
+-1.50 + (2.50)i
+Illegal comma
+Missing comma
+Undefined complex variable
+Missing parameter
+Missing comma
+Extraneous text after end of command
+-1.50 + (2.50)i
+Multiple consecutive commas
+Missing parameter
+Invalid parameter - not a number
+-5.00 + (-3.00)i
+2.92
+Extraneous text after end of command

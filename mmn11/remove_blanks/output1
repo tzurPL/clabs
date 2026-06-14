@@ -1,0 +1,6 @@
+The Input string: 
+"he l l o wo rld
+The string as received by the function: 
+"he l l o wo rld
+The string at the end of the function: 
+"helloworld"
