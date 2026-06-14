@@ -1,4 +1,4 @@
-/* Maman 12 - Tzur Pinto Lazar */
+/* Maman 12 */
 
 #include <stdio.h>
 #include "difference_and_sum.h"
@@ -98,4 +98,3 @@ int main(void) {
 
     return 0;
 }
-

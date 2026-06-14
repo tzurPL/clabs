@@ -1,6 +1,6 @@
 /*
  * parser.h
- * maman22 Tzur Pinto Lazar
+ * maman22
  */
 
 #ifndef PARSER_H

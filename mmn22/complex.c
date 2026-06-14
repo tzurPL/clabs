@@ -1,6 +1,6 @@
 /*
  * complex.c
- * maman22 Tzur Pinto Lazar
+ * maman22
  */
 
 #include <stdio.h>

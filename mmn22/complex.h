@@ -1,6 +1,6 @@
 /*
  * complex.h
- * maman22 Tzur Pinto Lazar
+ * maman22
  */
 
 #ifndef COMPLEX_H
