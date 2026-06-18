@@ -42,22 +42,23 @@ boolean secondPass(const char *filename, SymbolNode *symbols, CodeNode *codeHead
 
     while (fgets(line, sizeof(line), fp)) {
         ptr = line; lineNum++;
-        if (isEmptyLine(line) || isCommentLine(line)) continue;
-        token = getToken(&ptr);
-        if (token && token[0] != '\0' && token[strlen(token)-1] == ':') { free(token); token = getToken(&ptr); }
-        if (token && strcmp(token, ".entry") == 0) {
-            ent = getToken(&ptr);
-            if (ent) {
-                sym = getSymbol(symbols, ent);
-                if (sym) sym->isEntry = TRUE;
-                else {
-                    addError(errorList, lineNum, ERR_ENTRY_NOT_FOUND, ent);
-                    error = TRUE;
+        if (!isEmptyLine(line) && !isCommentLine(line)) {
+            token = getToken(&ptr);
+            if (token && token[0] != '\0' && token[strlen(token)-1] == ':') { free(token); token = getToken(&ptr); }
+            if (token && strcmp(token, ".entry") == 0) {
+                ent = getToken(&ptr);
+                if (ent) {
+                    sym = getSymbol(symbols, ent);
+                    if (sym) sym->isEntry = TRUE;
+                    else {
+                        addError(errorList, lineNum, ERR_ENTRY_NOT_FOUND, ent);
+                        error = TRUE;
+                    }
+                    free(ent);
                 }
-                free(ent);
             }
+            if (token) free(token);
         }
-        if (token) free(token);
     }
     fclose(fp);
 

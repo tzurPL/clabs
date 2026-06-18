@@ -28,7 +28,7 @@ void freeErrors(ErrorNode *head) {
     }
 }
 
-static void swapErrors(ErrorNode *a, ErrorNode *b) {
+void swapErrors(ErrorNode *a, ErrorNode *b) {
     int tempLine = a->lineNum;
     ErrorType tempType = a->type;
     char *tempInfo = a->extraInfo;
@@ -51,26 +51,24 @@ void printError(const char *filename, int lineNum, ErrorType type, const char *e
 
     fprintf(stderr, "Error: ");
 
-    switch (type) {
-        case ERR_OPEN_FILE: fprintf(stderr, "Could not open file"); break;
-        case ERR_ALLOC_FAIL: fprintf(stderr, "Not enough memory"); break;
-        case ERR_LINE_TOO_LONG: fprintf(stderr, "Line is too long (max 80 chars)"); break;
-        case ERR_UNDEFINED_MACRO: fprintf(stderr, "Undefined macro"); break;
-        case ERR_MACRO_REDEFINITION: fprintf(stderr, "Macro redefinition"); break;
-        case ERR_SYMBOL_REDEFINITION: fprintf(stderr, "Symbol redefinition"); break;
-        case ERR_RESERVED_KEYWORD: fprintf(stderr, "Reserved keyword used as a label or macro name"); break;
-        case ERR_UNDEFINED_SYMBOL: fprintf(stderr, "Undefined label '%s' (caught in Pass 2)", extraInfo); break;
-        case ERR_UNKNOWN_COMMAND: fprintf(stderr, "Unknown command/directive"); break;
-        case ERR_INVALID_REG: fprintf(stderr, "Invalid register name"); break;
-        case ERR_INVALID_IMMED: fprintf(stderr, "Invalid immediate value"); break;
-        case ERR_MISSING_COMMA: fprintf(stderr, "Missing comma between parameters"); break;
-        case ERR_ILLEGAL_COMMA: fprintf(stderr, "Illegal comma"); break;
-        case ERR_MULTIPLE_COMMAS: fprintf(stderr, "Multiple consecutive commas"); break;
-        case ERR_EXTRA_TEXT: fprintf(stderr, "Extraneous text after command"); break;
-        case ERR_ENTRY_NOT_FOUND: fprintf(stderr, "Entry symbol was not defined"); break;
-        case ERR_BRANCH_TOO_FAR: fprintf(stderr, "Branch offset is out of range or illegal"); break;
-        default: fprintf(stderr, "Unknown error occurred");
-    }
+    if (type == ERR_OPEN_FILE) fprintf(stderr, "Could not open file");
+    else if (type == ERR_ALLOC_FAIL) fprintf(stderr, "Not enough memory");
+    else if (type == ERR_LINE_TOO_LONG) fprintf(stderr, "Line is too long (max 80 chars)");
+    else if (type == ERR_UNDEFINED_MACRO) fprintf(stderr, "Undefined macro");
+    else if (type == ERR_MACRO_REDEFINITION) fprintf(stderr, "Macro redefinition");
+    else if (type == ERR_SYMBOL_REDEFINITION) fprintf(stderr, "Symbol redefinition");
+    else if (type == ERR_RESERVED_KEYWORD) fprintf(stderr, "Reserved keyword used as a label or macro name");
+    else if (type == ERR_UNDEFINED_SYMBOL) fprintf(stderr, "Undefined label '%s'", extraInfo);
+    else if (type == ERR_UNKNOWN_COMMAND) fprintf(stderr, "Unknown command/directive");
+    else if (type == ERR_INVALID_REG) fprintf(stderr, "Invalid register name");
+    else if (type == ERR_INVALID_IMMED) fprintf(stderr, "Invalid immediate value");
+    else if (type == ERR_MISSING_COMMA) fprintf(stderr, "Missing comma between parameters");
+    else if (type == ERR_ILLEGAL_COMMA) fprintf(stderr, "Illegal comma");
+    else if (type == ERR_MULTIPLE_COMMAS) fprintf(stderr, "Multiple consecutive commas");
+    else if (type == ERR_EXTRA_TEXT) fprintf(stderr, "Extraneous text after command");
+    else if (type == ERR_ENTRY_NOT_FOUND) fprintf(stderr, "Entry symbol was not defined");
+    else if (type == ERR_BRANCH_TOO_FAR) fprintf(stderr, "Branch offset is out of range or illegal");
+    else fprintf(stderr, "Unknown error occurred");
 
     if (type != ERR_UNDEFINED_SYMBOL && extraInfo) {
         fprintf(stderr, " - %s", extraInfo);

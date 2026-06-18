@@ -46,7 +46,7 @@ void writeOutput(const char *filename, SymbolNode *symbols, CodeNode *codeHead, 
 
     /* create the ENT file */
     s = symbols;
-    while (s) { if (s->isEntry) { hasEnt = TRUE; break; } s = s->next; }
+    while (s && !hasEnt) { if (s->isEntry) { hasEnt = TRUE; } s = s->next; }
     if (hasEnt) {
         strcpy(name, filename); strcat(name, ".ent");
         f = fopen(name, "w");
