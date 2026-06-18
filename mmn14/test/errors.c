@@ -71,7 +71,7 @@ void printError(const char *filename, int lineNum, ErrorType type, const char *e
     else fprintf(stderr, "Unknown error occurred");
 
     if (type != ERR_UNDEFINED_SYMBOL && extraInfo) {
-        fprintf(stderr, " - %s", extraInfo);
+        fprintf(stderr, ": %s", extraInfo);
     }
 
     fprintf(stderr, "\n");

@@ -10,7 +10,7 @@
  * the input is the line string, filename for error reporting, and the line number.
  * returns 1 if the line length is valid, 0 otherwise.
  */
-int checkLineLength(const char *line, const char *filename, int lineNum) {
+int checkLineLen(const char *line, const char *filename, int lineNum) {
     int len = strlen(line);
     if (len > 0 && line[len-1] == '\n') len--;
     if (len > 0 && line[len-1] == '\r') len--;
@@ -109,7 +109,7 @@ boolean preprocess(const char *filename) {
 
         lineNum++;
 
-        if (!checkLineLength(line, filename, lineNum)) {
+        if (!checkLineLen(line, filename, lineNum)) {
             error = TRUE;
         } else if (checkEmptyOrComment(&ptr)) {
             if (!inMacro) fprintf(amF, "%s", line);
