@@ -108,7 +108,7 @@ boolean matchComma(char **ptr, ErrorNode **errorList, int lineNum) {
     return FALSE;
 }
 
-int parseRegOperand(char **ptr, ErrorNode **errorList, int lineNum) {
+int checkRegOperand(char **ptr, ErrorNode **errorList, int lineNum) {
     int reg;
     char *t = getToken(ptr);
     if (!t) { addError(errorList, lineNum, ERR_EXTRA_TEXT, "missing operand"); return -1; }
@@ -118,7 +118,7 @@ int parseRegOperand(char **ptr, ErrorNode **errorList, int lineNum) {
     return reg;
 }
 
-short parseImmedOperand(char **ptr, ErrorNode **errorList, int lineNum, boolean *lineError) {
+short checkImmedOperand(char **ptr, ErrorNode **errorList, int lineNum, boolean *lineError) {
     short val;
     char *t = getToken(ptr);
     if (!t) { addError(errorList, lineNum, ERR_EXTRA_TEXT, "missing operand"); *lineError = TRUE; return 0; }
@@ -127,7 +127,7 @@ short parseImmedOperand(char **ptr, ErrorNode **errorList, int lineNum, boolean 
     return val;
 }
 
-char *parseLabelOperand(char **ptr, ErrorNode **errorList, int lineNum, boolean *lineError) {
+char *checkLabelOperand(char **ptr, ErrorNode **errorList, int lineNum, boolean *lineError) {
     char *t = getToken(ptr);
     if (!t) { addError(errorList, lineNum, ERR_EXTRA_TEXT, "missing operand"); *lineError = TRUE; return NULL; }
     return t;

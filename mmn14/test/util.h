@@ -30,9 +30,9 @@ int getRegNum(const char *token);
 
 /* Clean parsing helpers */
 boolean matchComma(char **ptr, ErrorNode **errorList, int lineNum);
-int parseRegOperand(char **ptr, ErrorNode **errorList, int lineNum);
-short parseImmedOperand(char **ptr, ErrorNode **errorList, int lineNum, boolean *lineError);
-char *parseLabelOperand(char **ptr, ErrorNode **errorList, int lineNum, boolean *lineError);
+int checkRegOperand(char **ptr, ErrorNode **errorList, int lineNum);
+short checkImmedOperand(char **ptr, ErrorNode **errorList, int lineNum, boolean *lineError);
+char *checkLabelOperand(char **ptr, ErrorNode **errorList, int lineNum, boolean *lineError);
 void checkExtraText(char **ptr, ErrorNode **errorList, int lineNum, boolean *lineError);
 
 #endif

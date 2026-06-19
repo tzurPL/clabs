@@ -30,7 +30,7 @@ void addDataNode(DataNode **head, unsigned char byte, int address) {
     }
 }
 
-boolean parseData(char **ptr, DataNode **dataHead, int *DC, int size, const char *filename, int lineNum, ErrorNode **errorList) {
+boolean checkData(char **ptr, DataNode **dataHead, int *DC, int size, const char *filename, int lineNum, ErrorNode **errorList) {
     char *t;
     long val;
     boolean err = FALSE; /* C90 requires declaration at top */
@@ -84,9 +84,9 @@ boolean firstPass(const char *filename, SymbolNode **symbols, CodeNode **codeHea
         len = strlen(line);
         if (len > 0 && line[len-1] == '\n') len--;
         if (len > 0 && line[len-1] == '\r') len--;
-        if (len > 80) { 
-            addError(errorList, lineNum, ERR_LINE_TOO_LONG, NULL); 
-            error = TRUE; 
+        if (len > 80) {
+            addError(errorList, lineNum, ERR_LINE_TOO_LONG, NULL);
+            error = TRUE;
         } else if (!isEmptyLine(line) && !isCommentLine(line)) {
             token = getToken(&ptr);
             if (token && token[0] != '\0' && token[strlen(token)-1] == ':') {
@@ -96,15 +96,15 @@ boolean firstPass(const char *filename, SymbolNode **symbols, CodeNode **codeHea
                 label = token;
                 token = getToken(&ptr);
             }
-            if (!token) { 
-                if (label) free(label); 
-                if (lineError) error = TRUE; 
+            if (!token) {
+                if (label) free(label);
+                if (lineError) error = TRUE;
             } else {
                 if (token[0] == '.') {
                     if (label && !lineError) addSymbol(symbols, label, *DC, ATTR_DATA);
-                    if (strcmp(token, ".db") == 0) { if (!parseData(&ptr, dataHead, DC, 1, filename, lineNum, errorList)) lineError = TRUE; }
-                    else if (strcmp(token, ".dh") == 0) { if (!parseData(&ptr, dataHead, DC, 2, filename, lineNum, errorList)) lineError = TRUE; }
-                    else if (strcmp(token, ".dw") == 0) { if (!parseData(&ptr, dataHead, DC, 4, filename, lineNum, errorList)) lineError = TRUE; }
+                    if (strcmp(token, ".db") == 0) { if (!checkData(&ptr, dataHead, DC, 1, filename, lineNum, errorList)) lineError = TRUE; }
+                    else if (strcmp(token, ".dh") == 0) { if (!checkData(&ptr, dataHead, DC, 2, filename, lineNum, errorList)) lineError = TRUE; }
+                    else if (strcmp(token, ".dw") == 0) { if (!checkData(&ptr, dataHead, DC, 4, filename, lineNum, errorList)) lineError = TRUE; }
                     else if (strcmp(token, ".asciz") == 0) {
                         skipSpaces(&ptr);
                         if (*ptr == '\"') {
@@ -132,36 +132,36 @@ boolean firstPass(const char *filename, SymbolNode **symbols, CodeNode **codeHea
 
                         if (op->type == R_TYPE) {
                             rs=rt=rd=0;
-                            rs = parseRegOperand(&ptr, errorList, lineNum);
+                            rs = checkRegOperand(&ptr, errorList, lineNum);
                             if (rs == -1) lineError = TRUE;
 
                             if (!lineError && !matchComma(&ptr, errorList, lineNum)) lineError = TRUE;
 
                             if (op->opcode == 0) { /* arithmetic/logic: rs, rt, rd */
-                                if (!lineError) { rt = parseRegOperand(&ptr, errorList, lineNum); if (rt == -1) lineError = TRUE; }
+                                if (!lineError) { rt = checkRegOperand(&ptr, errorList, lineNum); if (rt == -1) lineError = TRUE; }
                                 if (!lineError && !matchComma(&ptr, errorList, lineNum)) lineError = TRUE;
-                                if (!lineError) { rd = parseRegOperand(&ptr, errorList, lineNum); if (rd == -1) lineError = TRUE; }
+                                if (!lineError) { rd = checkRegOperand(&ptr, errorList, lineNum); if (rd == -1) lineError = TRUE; }
                             } else { /* copy: rs, rd */
-                                if (!lineError) { rd = parseRegOperand(&ptr, errorList, lineNum); if (rd == -1) lineError = TRUE; }
+                                if (!lineError) { rd = checkRegOperand(&ptr, errorList, lineNum); if (rd == -1) lineError = TRUE; }
                             }
                             if (!lineError) checkExtraText(&ptr, errorList, lineNum, &lineError);
                             if (!lineError) { word |= (rs << 21) | (rt << 16) | (rd << 11) | (op->funct << 6); addCodeNode(codeHead, word, *IC, lineNum, NULL); *IC += 4; }
                         }
                         else if (op->type == I_TYPE) {
                             rs=rt=0; immed=0; labDep = NULL;
-                            rs = parseRegOperand(&ptr, errorList, lineNum);
+                            rs = checkRegOperand(&ptr, errorList, lineNum);
                             if (rs == -1) lineError = TRUE;
 
                             if (!lineError && !matchComma(&ptr, errorList, lineNum)) lineError = TRUE;
 
                             if ((op->opcode >= 10 && op->opcode <= 14) || (op->opcode >= 19 && op->opcode <= 24)) { /* rs, immed, rt */
-                                if (!lineError) immed = parseImmedOperand(&ptr, errorList, lineNum, &lineError);
+                                if (!lineError) immed = checkImmedOperand(&ptr, errorList, lineNum, &lineError);
                                 if (!lineError && !matchComma(&ptr, errorList, lineNum)) lineError = TRUE;
-                                if (!lineError) { rt = parseRegOperand(&ptr, errorList, lineNum); if (rt == -1) lineError = TRUE; }
+                                if (!lineError) { rt = checkRegOperand(&ptr, errorList, lineNum); if (rt == -1) lineError = TRUE; }
                             } else if (op->opcode >= 15 && op->opcode <= 18) { /* cond branch: rs, rt, label */
-                                if (!lineError) { rt = parseRegOperand(&ptr, errorList, lineNum); if (rt == -1) lineError = TRUE; }
+                                if (!lineError) { rt = checkRegOperand(&ptr, errorList, lineNum); if (rt == -1) lineError = TRUE; }
                                 if (!lineError && !matchComma(&ptr, errorList, lineNum)) lineError = TRUE;
-                                if (!lineError) labDep = parseLabelOperand(&ptr, errorList, lineNum, &lineError);
+                                if (!lineError) labDep = checkLabelOperand(&ptr, errorList, lineNum, &lineError);
                             }
                             if (!lineError) checkExtraText(&ptr, errorList, lineNum, &lineError);
                             if (!lineError) { word |= (rs << 21) | (rt << 16) | (immed & 0xFFFF); addCodeNode(codeHead, word, *IC, lineNum, labDep); *IC += 4; }
