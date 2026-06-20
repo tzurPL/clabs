@@ -19,6 +19,6 @@ typedef struct DataNode {
     struct DataNode *next;
 } DataNode;
 
-boolean firstPass(const char *filename, SymbolNode **symbols, CodeNode **codeHead, DataNode **dataHead, int *IC, int *DC, ErrorNode **errorList);
+boolean firstPass(const char *filename, SymbolNode **symbols, CodeNode **codeHead, DataNode **dataHead, int *IC, int *DC, ErrorNode **errorList, MacroNode *macros);
 
 #endif

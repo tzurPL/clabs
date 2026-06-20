@@ -2,8 +2,9 @@
 #define PREPROC_H
 
 #include "globals.h"
+#include "table.h"
 
-/* Returns TRUE if successful, FALSE otherwise. */
-boolean preprocess(const char *filename);
+/* preprocess func: runs the preprocessor phase on the input file, expanding macros and removing comments/empty lines. Returns boolean for success/fail and output macros. */
+boolean preprocess(const char *filename, MacroNode **outMacros);
 
 #endif

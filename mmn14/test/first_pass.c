@@ -60,7 +60,7 @@ boolean checkData(char **ptr, DataNode **dataHead, int *DC, int size, const char
     return !err;
 }
 
-boolean firstPass(const char *filename, SymbolNode **symbols, CodeNode **codeHead, DataNode **dataHead, int *IC, int *DC, ErrorNode **errorList) {
+boolean firstPass(const char *filename, SymbolNode **symbols, CodeNode **codeHead, DataNode **dataHead, int *IC, int *DC, ErrorNode **errorList, MacroNode *macros) {
     char amName[MAX_LINE_LENGTH];
     FILE *fp;
     char line[MAX_LINE_LENGTH + 2];
@@ -91,8 +91,11 @@ boolean firstPass(const char *filename, SymbolNode **symbols, CodeNode **codeHea
             token = getToken(&ptr);
             if (token && token[0] != '\0' && token[strlen(token)-1] == ':') {
                 token[strlen(token)-1] = '\0';
-                if (isReservedKeyword(token)) { addError(errorList, lineNum, ERR_RESERVED_KEYWORD, NULL); lineError = TRUE; }
+                if (strlen(token) > 31) { addError(errorList, lineNum, ERR_LABEL_TOO_LONG, token); lineError = TRUE; }
+                else if (!isValidLabelFormat(token)) { addError(errorList, lineNum, ERR_INVALID_LABEL_FORMAT, token); lineError = TRUE; }
+                else if (isReservedKeyword(token)) { addError(errorList, lineNum, ERR_RESERVED_KEYWORD, NULL); lineError = TRUE; }
                 else if (getSymbol(*symbols, token)) { addError(errorList, lineNum, ERR_SYMBOL_REDEFINITION, token); lineError = TRUE; }
+                else if (getMacroContent(macros, token)) { addError(errorList, lineNum, ERR_SYMBOL_REDEFINITION, "label has same name as a macro"); lineError = TRUE; }
                 label = token;
                 token = getToken(&ptr);
             }

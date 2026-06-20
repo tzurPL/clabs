@@ -93,17 +93,18 @@ void processFile(const char *filename) {
     DataNode *dataHead = NULL;
     ExternalUsage *extUsage = NULL;
     ErrorNode *errorList = NULL;
+    MacroNode *macros = NULL;
     int IC = IC_INIT, DC = 0;
     boolean pass1Ok, pass2Ok;
 
     printf("Processing %s...\n", filename);
 
-    if (!preprocess(filename)) {
+    if (!preprocess(filename, &macros)) {
         printf("Failed to preprocess %s. Halting assembly.\n", filename);
         return;
     }
 
-    pass1Ok = firstPass(filename, &symbols, &codeHead, &dataHead, &IC, &DC, &errorList);
+    pass1Ok = firstPass(filename, &symbols, &codeHead, &dataHead, &IC, &DC, &errorList, macros);
     pass2Ok = secondPass(filename, symbols, codeHead, &extUsage, &errorList);
 
     if (pass1Ok && pass2Ok) {
@@ -119,6 +120,7 @@ void processFile(const char *filename) {
     freeData(dataHead);
     freeExtUsage(extUsage);
     freeErrors(errorList);
+    freeMacros(macros);
 }
 
 int main(int argc, char *argv[]) {

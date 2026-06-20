@@ -54,7 +54,7 @@ int checkLabel(char **token, char **label, char **ptr, boolean *hasLabel) {
 /*
  * checks if the token indicates the start of a macro definition ("mcro").
  * validates and extracts the macro name if it is a macro definition.
- * the input is the token, a pointer to the input string pointer, a buffer to store the macro name, the filename, and the line number.
+ * the input is the token, a pointer to the input string pointer, a code to store the macro name, the filename, and the line number.
  * returns 1 if a valid macro definition was found, 0 if not a macro definition, and -1 if there was an error.
  */
 int checkMacroDef(const char *token, char **ptr, char *macroName, const char *filename, int lineNum) {
@@ -64,6 +64,11 @@ int checkMacroDef(const char *token, char **ptr, char *macroName, const char *fi
         if (exp) {
             if (isReservedKeyword(exp)) {
                 printError(filename, lineNum, ERR_RESERVED_KEYWORD, exp);
+                free(exp);
+                return -1;
+            }
+            if (!isValidLabelFormat(exp)) {
+                printError(filename, lineNum, ERR_INVALID_LABEL_FORMAT, exp);
                 free(exp);
                 return -1;
             }
@@ -77,7 +82,16 @@ int checkMacroDef(const char *token, char **ptr, char *macroName, const char *fi
     return 0;
 }
 
-boolean preprocess(const char *filename) {
+/* Helper function to append to our output code */
+static void appendToOutput(char **code, size_t *size, const char *str) {
+    size_t len = strlen(str);
+    *code = (char *)safeRealloc(*code, *size + len);
+    strcat(*code, str);
+    *size += len;
+}
+
+/* preprocess func: runs the preprocessor phase on the input file, expanding macros and removing comments/empty lines. Returns boolean for success/fail and output macros. */
+boolean preprocess(const char *filename, MacroNode **outMacros) {
     char asName[MAX_LINE_LENGTH], amName[MAX_LINE_LENGTH];
     FILE *asF, *amF;
     char line[MAX_LINE_LENGTH + 2];
@@ -88,18 +102,17 @@ boolean preprocess(const char *filename) {
     char *token, *exp, *label;
     int lineNum = 0, macroDefStatus;
 
+    char *output = (char *)safeMalloc(1);
+    size_t outSize = 1;
+    output[0] = '\0';
+
     strcpy(asName, filename); strcat(asName, ".as");
     strcpy(amName, filename); strcat(amName, ".am");
 
     asF = fopen(asName, "r");
     if (!asF) {
         printError(filename, 0, ERR_OPEN_FILE, asName);
-        return FALSE;
-    }
-    amF = fopen(amName, "w");
-    if (!amF) {
-        printError(filename, 0, ERR_OPEN_FILE, amName);
-        fclose(asF);
+        free(output);
         return FALSE;
     }
 
@@ -112,24 +125,30 @@ boolean preprocess(const char *filename) {
         if (!checkLineLen(line, filename, lineNum)) {
             error = TRUE;
         } else if (checkEmptyOrComment(&ptr)) {
-            if (!inMacro) fprintf(amF, "%s", line);
+            if (!inMacro) appendToOutput(&output, &outSize, line);
         } else {
             token = getToken(&ptr);
             if (!token) {
-                if (!inMacro) fprintf(amF, "%s", line);
+                if (!inMacro) appendToOutput(&output, &outSize, line);
             } else {
                 label = NULL;
                 /* If the first token is a label, save it and check the NEXT token */
                 checkLabel(&token, &label, &ptr, &hasLabel);
 
                 if (!token) {
-                    if (!inMacro) fprintf(amF, "%s", line);
+                    if (!inMacro) appendToOutput(&output, &outSize, line);
                     if (hasLabel) free(label);
                 } else {
                     macroDefStatus = checkMacroDef(token, &ptr, macroName, filename, lineNum);
                     if (macroDefStatus != 0) {
                         inMacro = TRUE;
                         if (macroDefStatus == -1) error = TRUE;
+                        else {
+                            if (getMacroContent(macros, macroName)) {
+                                printError(filename, lineNum, ERR_MACRO_REDEFINITION, macroName);
+                                error = TRUE;
+                            }
+                        }
                         macroContent = (char *)safeMalloc(1);
                         macroContent[0] = '\0';
                     } else if (strcmp(token, "mcroend") == 0) {
@@ -146,12 +165,14 @@ boolean preprocess(const char *filename) {
                             if (exp) {
                                 if (hasLabel) {
                                     /* Keep the label, but inject the macro expansion */
-                                    fprintf(amF, "%s %s", label, exp);
+                                    char temp[MAX_LINE_LENGTH + 2];
+                                    sprintf(temp, "%s %s", label, exp);
+                                    appendToOutput(&output, &outSize, temp);
                                 } else {
-                                    fprintf(amF, "%s", exp);
+                                    appendToOutput(&output, &outSize, exp);
                                 }
                             } else {
-                                fprintf(amF, "%s", line); /* Print original line */
+                                appendToOutput(&output, &outSize, line); /* Print original line */
                             }
                         }
                     }
@@ -164,7 +185,21 @@ boolean preprocess(const char *filename) {
     }
 
     fclose(asF);
-    fclose(amF);
-    freeMacros(macros);
+
+    if (!error) {
+        amF = fopen(amName, "w");
+        if (!amF) {
+            printError(filename, 0, ERR_OPEN_FILE, amName);
+            error = TRUE;
+        } else {
+            fprintf(amF, "%s", output);
+            fclose(amF);
+        }
+    }
+
+    free(output);
+
+    if (outMacros) *outMacros = macros;
+    else freeMacros(macros);
     return !error;
 }

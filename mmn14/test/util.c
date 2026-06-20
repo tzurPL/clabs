@@ -27,6 +27,16 @@ boolean isReservedKeyword(const char *name) {
     return FALSE;
 }
 
+boolean isValidLabelFormat(const char *name) {
+    int i = 0;
+    if (!name || name[0] == '\0') return FALSE;
+    if (!isalpha((unsigned char)name[0])) return FALSE;
+    for (i = 1; name[i]; i++) {
+        if (!isalnum((unsigned char)name[i]) && name[i] != '_') return FALSE;
+    }
+    return TRUE;
+}
+
 void *safeMalloc(size_t size) {
     void *ptr = malloc(size);
     if (!ptr) { printError(NULL, 0, ERR_ALLOC_FAIL, NULL); exit(1); }

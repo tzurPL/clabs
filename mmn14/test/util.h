@@ -15,6 +15,7 @@ typedef struct {
 
 Opcode *getOpcode(const char *name);
 boolean isReservedKeyword(const char *name);
+boolean isValidLabelFormat(const char *name);
 
 void *safeMalloc(size_t size);
 void *safeRealloc(void *ptr, size_t size);
