@@ -83,7 +83,7 @@ int checkMacroDef(const char *token, char **ptr, char *macroName, const char *fi
 }
 
 /* Helper function to append to our output code */
-static void appendToOutput(char **code, size_t *size, const char *str) {
+void appendToOutput(char **code, size_t *size, const char *str) {
     size_t len = strlen(str);
     *code = (char *)safeRealloc(*code, *size + len);
     strcat(*code, str);
