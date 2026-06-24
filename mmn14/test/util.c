@@ -49,11 +49,7 @@ void *safeRealloc(void *ptr, size_t size) {
     return newPtr;
 }
 
-char *duplicateString(const char *str) {
-    char *dup = (char *)safeMalloc(strlen(str) + 1);
-    strcpy(dup, str);
-    return dup;
-}
+
 
 void skipSpaces(char **str) {
     while (**str != '\0' && isspace((unsigned char)**str)) {

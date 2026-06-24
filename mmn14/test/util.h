@@ -19,7 +19,7 @@ boolean isValidLabelFormat(const char *name);
 
 void *safeMalloc(size_t size);
 void *safeRealloc(void *ptr, size_t size);
-char *duplicateString(const char *str);
+
 
 /* Using standard C string utils */
 void skipSpaces(char **str);
