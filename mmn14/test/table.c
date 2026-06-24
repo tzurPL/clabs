@@ -7,7 +7,7 @@ void addSymbol(SymbolNode **head, const char *name, int value, Attribute attr) {
     SymbolNode *node = getSymbol(*head, name);
     if (!node) {
         node = (SymbolNode *)safeMalloc(sizeof(SymbolNode));
-        node->name = strdup(name);
+        node->name = strdupp(name);
         node->value = value;
         node->isCode = node->isData = node->isExternal = node->isEntry = FALSE;
         node->next = *head;
@@ -44,8 +44,8 @@ void freeSymbols(SymbolNode *head) {
 /* addMacro func: adds a macro name and its content to the macro list. */
 void addMacro(MacroNode **head, const char *name, const char *content) {
     MacroNode *newNode = (MacroNode *)safeMalloc(sizeof(MacroNode));
-    newNode->name = strdup(name);
-    newNode->content = strdup(content);
+    newNode->name = strdupp(name);
+    newNode->content = strdupp(content);
     newNode->next = *head;
     *head = newNode;
 }

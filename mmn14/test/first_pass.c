@@ -7,7 +7,7 @@ void addCodeNode(CodeNode **head, unsigned int word, int address, int lineNum, c
     newNode->word = word;
     newNode->address = address;
     newNode->lineNum = lineNum;
-    newNode->labelDep = labelDep ? strdup(labelDep) : NULL;
+    newNode->labelDep = labelDep ? strdupp(labelDep) : NULL;
     newNode->next = NULL;
     if (!*head) *head = newNode;
     else {
@@ -200,7 +200,7 @@ void processJType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int 
                 else { regBit = 1; addr = getRegNum(t); if (addr == -1) { addError(errorList, lineNum, ERR_INVALID_REG, t); *lineError = TRUE; } }
             } else {
                 if (t[0] >= '0' && t[0] <= '9') { addError(errorList, lineNum, ERR_INVALID_IMMED, "J-type takes label or register"); *lineError = TRUE; }
-                else { regBit = 0; labDep = strdup(t); }
+                else { regBit = 0; labDep = strdupp(t); }
             }
             free(t);
         } else { addError(errorList, lineNum, ERR_EXTRA_TEXT, "missing operand"); *lineError = TRUE; }

@@ -8,7 +8,7 @@ void addError(ErrorNode **head, int lineNum, ErrorType type, const char *extraIn
     ErrorNode *newNode = (ErrorNode *)safeMalloc(sizeof(ErrorNode));
     newNode->lineNum = lineNum;
     newNode->type = type;
-    newNode->extraInfo = extraInfo ? strdup(extraInfo) : NULL;
+    newNode->extraInfo = extraInfo ? strdupp(extraInfo) : NULL;
     newNode->next = NULL;
 
     if (!*head) *head = newNode;

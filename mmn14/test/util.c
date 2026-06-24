@@ -49,6 +49,14 @@ void *safeRealloc(void *ptr, size_t size) {
     return newPtr;
 }
 
+char *strdupp(const char *s) {
+    char *d;
+    if (!s) return NULL;
+    d = (char *)safeMalloc(strlen(s) + 1);
+    strcpy(d, s);
+    return d;
+}
+
 
 
 void skipSpaces(char **str) {

@@ -5,7 +5,7 @@
 
 void addExtUsage(ExternalUsage **head, const char *name, int address) {
     ExternalUsage *newNode = (ExternalUsage *)safeMalloc(sizeof(ExternalUsage));
-    newNode->name = strdup(name);
+    newNode->name = strdupp(name);
     newNode->address = address;
     newNode->next = NULL;
     if (!*head) *head = newNode;
