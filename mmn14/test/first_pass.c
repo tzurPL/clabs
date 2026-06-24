@@ -60,19 +60,209 @@ boolean checkData(char **ptr, DataNode **dataHead, int *DC, int size, const char
     return !err;
 }
 
+/*
+ * checks the length of the given line to ensure it doesn't exceed the maximum allowed length.
+ * the input is the line string, error list, and the line number.
+ * returns 1 if the line length is valid, 0 otherwise.
+ */
+int checkLineLenFirstPass(const char *line, ErrorNode **errorList, int lineNum) {
+    int len = strlen(line);
+    if (len > 0 && line[len-1] == '\n') len--;
+    if (len > 0 && line[len-1] == '\r') len--;
+    if (len > 80) {
+        addError(errorList, lineNum, ERR_LINE_TOO_LONG, NULL);
+        return 0;
+    }
+    return 1;
+}
+
+/*
+ * checks if the token is a valid label definition.
+ * updates the label pointer if a valid label is found and sets lineError if there are issues.
+ * the input is the token, label pointer, string pointer, error list, line number, symbols and macros.
+ * returns 1 if it is a label definition (valid or invalid), 0 otherwise.
+ */
+int checkLabelDef(char **token, char **label, char **ptr, ErrorNode **errorList, int lineNum, SymbolNode *symbols, MacroNode *macros, boolean *lineError) {
+    if (*token && (*token)[0] != '\0' && (*token)[strlen(*token)-1] == ':') {
+        (*token)[strlen(*token)-1] = '\0';
+        if (strlen(*token) > 31) { addError(errorList, lineNum, ERR_LABEL_TOO_LONG, *token); *lineError = TRUE; }
+        else if (!isValidLabelFormat(*token)) { addError(errorList, lineNum, ERR_INVALID_LABEL_FORMAT, *token); *lineError = TRUE; }
+        else if (isReservedKeyword(*token)) { addError(errorList, lineNum, ERR_RESERVED_KEYWORD, NULL); *lineError = TRUE; }
+        else if (getSymbol(symbols, *token)) { addError(errorList, lineNum, ERR_SYMBOL_REDEFINITION, *token); *lineError = TRUE; }
+        else if (getMacroContent(macros, *token)) { addError(errorList, lineNum, ERR_SYMBOL_REDEFINITION, "label has same name as a macro"); *lineError = TRUE; }
+        *label = *token;
+        *token = getToken(ptr);
+        return 1;
+    }
+    return 0;
+}
+
+/*
+ * processes the .asciz directive and extracts the string.
+ * adds characters to data image and reports errors if missing quotes.
+ * the input is string pointer, data head, DC, error list, line number, and lineError flag.
+ * returns void.
+ */
+void processAsciz(char **ptr, DataNode **dataHead, int *DC, ErrorNode **errorList, int lineNum, boolean *lineError) {
+    skipSpaces(ptr);
+    if (**ptr == '\"') {
+        (*ptr)++;
+        while (**ptr && **ptr != '\"') addDataNode(dataHead, *(*ptr)++, (*DC)++);
+        if (**ptr == '\"') { (*ptr)++; addDataNode(dataHead, '\0', (*DC)++); }
+        else { addError(errorList, lineNum, ERR_EXTRA_TEXT, "missing closing quote"); *lineError = TRUE; }
+    } else { addError(errorList, lineNum, ERR_EXTRA_TEXT, "missing string"); *lineError = TRUE; }
+    checkExtraText(ptr, errorList, lineNum, lineError);
+}
+
+/*
+ * processes the .extern directive and adds the symbol to the symbol table.
+ * reports errors if the symbol is already defined locally.
+ * the input is string pointer, symbol table, error list, line number, and lineError flag.
+ * returns void.
+ */
+void processExtern(char **ptr, SymbolNode **symbols, ErrorNode **errorList, int lineNum, boolean *lineError) {
+    char *ext = getToken(ptr);
+    if (ext) {
+        SymbolNode *s = getSymbol(*symbols, ext);
+        if (s && !s->isExternal) { addError(errorList, lineNum, ERR_SYMBOL_REDEFINITION, "external symbol already defined locally"); *lineError = TRUE; }
+        else addSymbol(symbols, ext, 0, ATTR_EXTERNAL);
+        free(ext);
+    } else { addError(errorList, lineNum, ERR_EXTRA_TEXT, "missing extern name"); *lineError = TRUE; }
+    checkExtraText(ptr, errorList, lineNum, lineError);
+}
+
+/*
+ * processes an assembler directive (.db, .dh, .dw, .asciz, .extern, .entry).
+ * updates data image and symbol table accordingly.
+ * the input is the token, string pointer, label, filename, line number, symbols, data head, DC, and error list.
+ * returns TRUE if an error occurred during processing, FALSE otherwise.
+ */
+boolean processDirective(char *token, char **ptr, char *label, const char *filename, int lineNum, SymbolNode **symbols, DataNode **dataHead, int *DC, ErrorNode **errorList, boolean lineError) {
+    if (label && !lineError) addSymbol(symbols, label, *DC, ATTR_DATA);
+    if (strcmp(token, ".db") == 0) { if (!checkData(ptr, dataHead, DC, 1, filename, lineNum, errorList)) lineError = TRUE; }
+    else if (strcmp(token, ".dh") == 0) { if (!checkData(ptr, dataHead, DC, 2, filename, lineNum, errorList)) lineError = TRUE; }
+    else if (strcmp(token, ".dw") == 0) { if (!checkData(ptr, dataHead, DC, 4, filename, lineNum, errorList)) lineError = TRUE; }
+    else if (strcmp(token, ".asciz") == 0) { processAsciz(ptr, dataHead, DC, errorList, lineNum, &lineError); }
+    else if (strcmp(token, ".extern") == 0) { processExtern(ptr, symbols, errorList, lineNum, &lineError); }
+    else if (strcmp(token, ".entry") != 0) { addError(errorList, lineNum, ERR_UNKNOWN_COMMAND, token); lineError = TRUE; }
+    
+    return lineError;
+}
+
+/*
+ * processes an R-type instruction.
+ * reads registers and updates the code image.
+ * the input is string pointer, opcode, line number, code head, IC, error list, and lineError flag.
+ * returns void.
+ */
+void processRType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int *IC, ErrorNode **errorList, boolean *lineError, unsigned int word) {
+    int rs=0, rt=0, rd=0;
+    rs = checkRegOperand(ptr, errorList, lineNum);
+    if (rs == -1) *lineError = TRUE;
+
+    if (!*lineError && !matchComma(ptr, errorList, lineNum)) *lineError = TRUE;
+
+    if (op->opcode == 0) { /* arithmetic/logic: rs, rt, rd */
+        if (!*lineError) { rt = checkRegOperand(ptr, errorList, lineNum); if (rt == -1) *lineError = TRUE; }
+        if (!*lineError && !matchComma(ptr, errorList, lineNum)) *lineError = TRUE;
+        if (!*lineError) { rd = checkRegOperand(ptr, errorList, lineNum); if (rd == -1) *lineError = TRUE; }
+    } else { /* copy: rs, rd */
+        if (!*lineError) { rd = checkRegOperand(ptr, errorList, lineNum); if (rd == -1) *lineError = TRUE; }
+    }
+    if (!*lineError) checkExtraText(ptr, errorList, lineNum, lineError);
+    if (!*lineError) { word |= (rs << 21) | (rt << 16) | (rd << 11) | (op->funct << 6); addCodeNode(codeHead, word, *IC, lineNum, NULL); *IC += 4; }
+}
+
+/*
+ * processes an I-type instruction.
+ * reads registers and immediates/labels and updates the code image.
+ * the input is string pointer, opcode, line number, code head, IC, error list, and lineError flag.
+ * returns void.
+ */
+void processIType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int *IC, ErrorNode **errorList, boolean *lineError, unsigned int word) {
+    int rs=0, rt=0; short immed=0; char *labDep = NULL;
+    rs = checkRegOperand(ptr, errorList, lineNum);
+    if (rs == -1) *lineError = TRUE;
+
+    if (!*lineError && !matchComma(ptr, errorList, lineNum)) *lineError = TRUE;
+
+    if ((op->opcode >= 10 && op->opcode <= 14) || (op->opcode >= 19 && op->opcode <= 24)) { /* rs, immed, rt */
+        if (!*lineError) immed = checkImmedOperand(ptr, errorList, lineNum, lineError);
+        if (!*lineError && !matchComma(ptr, errorList, lineNum)) *lineError = TRUE;
+        if (!*lineError) { rt = checkRegOperand(ptr, errorList, lineNum); if (rt == -1) *lineError = TRUE; }
+    } else if (op->opcode >= 15 && op->opcode <= 18) { /* cond branch: rs, rt, label */
+        if (!*lineError) { rt = checkRegOperand(ptr, errorList, lineNum); if (rt == -1) *lineError = TRUE; }
+        if (!*lineError && !matchComma(ptr, errorList, lineNum)) *lineError = TRUE;
+        if (!*lineError) labDep = checkLabelOperand(ptr, errorList, lineNum, lineError);
+    }
+    if (!*lineError) checkExtraText(ptr, errorList, lineNum, lineError);
+    if (!*lineError) { word |= (rs << 21) | (rt << 16) | (immed & 0xFFFF); addCodeNode(codeHead, word, *IC, lineNum, labDep); *IC += 4; }
+    if (labDep) free(labDep);
+}
+
+/*
+ * processes a J-type instruction.
+ * reads the address or label and updates the code image.
+ * the input is string pointer, opcode, line number, code head, IC, error list, and lineError flag.
+ * returns void.
+ */
+void processJType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int *IC, ErrorNode **errorList, boolean *lineError, unsigned int word) {
+    int regBit = 0, addr = 0; char *labDep = NULL;
+    if (op->opcode != 63) { /* jmp, la, call */
+        char *t = getToken(ptr);
+        if (t) {
+            if (t[0] == '$') {
+                if (op->opcode == 31 || op->opcode == 32) { addError(errorList, lineNum, ERR_INVALID_IMMED, "la/call takes a label"); *lineError = TRUE; }
+                else { regBit = 1; addr = getRegNum(t); if (addr == -1) { addError(errorList, lineNum, ERR_INVALID_REG, t); *lineError = TRUE; } }
+            } else {
+                if (t[0] >= '0' && t[0] <= '9') { addError(errorList, lineNum, ERR_INVALID_IMMED, "J-type takes label or register"); *lineError = TRUE; }
+                else { regBit = 0; labDep = duplicateString(t); }
+            }
+            free(t);
+        } else { addError(errorList, lineNum, ERR_EXTRA_TEXT, "missing operand"); *lineError = TRUE; }
+    }
+    if (!*lineError) checkExtraText(ptr, errorList, lineNum, lineError);
+    if (!*lineError) { word |= (regBit << 25) | (addr & 0x1FFFFFF); addCodeNode(codeHead, word, *IC, lineNum, labDep); *IC += 4; }
+    if (labDep) free(labDep);
+}
+
+/*
+ * processes an instruction and delegates to the appropriate format handler.
+ * the input is the token, string pointer, label, line number, symbols, code head, IC, error list, and lineError flag.
+ * returns TRUE if an error occurred during processing, FALSE otherwise.
+ */
+boolean processInstruction(char *token, char **ptr, char *label, int lineNum, SymbolNode **symbols, CodeNode **codeHead, int *IC, ErrorNode **errorList, boolean lineError) {
+    Opcode *op = getOpcode(token);
+    unsigned int word;
+    if (op) {
+        word = (op->opcode << 26);
+        if (label && !lineError) addSymbol(symbols, label, *IC, ATTR_CODE);
+
+        if (op->type == R_TYPE) {
+            processRType(ptr, op, lineNum, codeHead, IC, errorList, &lineError, word);
+        }
+        else if (op->type == I_TYPE) {
+            processIType(ptr, op, lineNum, codeHead, IC, errorList, &lineError, word);
+        }
+        else if (op->type == J_TYPE) {
+            processJType(ptr, op, lineNum, codeHead, IC, errorList, &lineError, word);
+        }
+    } else {
+        addError(errorList, lineNum, ERR_UNKNOWN_COMMAND, token);
+        lineError = TRUE;
+    }
+    return lineError;
+}
+
 boolean firstPass(const char *filename, SymbolNode **symbols, CodeNode **codeHead, DataNode **dataHead, int *IC, int *DC, ErrorNode **errorList, MacroNode *macros) {
     char amName[MAX_LINE_LENGTH];
     FILE *fp;
     char line[MAX_LINE_LENGTH + 2];
-    int lineNum = 0, len;
+    int lineNum = 0;
     boolean error = FALSE, lineError;
-    char *ptr, *token, *label, *ext, *labDep;
+    char *ptr, *token, *label;
     SymbolNode *currSym;
     DataNode *currData;
-    Opcode *op;
-    unsigned int word;
-    int rs, rt, rd;
-    short immed;
 
     strcpy(amName, filename); strcat(amName, ".am");
     fp = fopen(amName, "r");
@@ -81,115 +271,20 @@ boolean firstPass(const char *filename, SymbolNode **symbols, CodeNode **codeHea
     while (fgets(line, sizeof(line), fp)) {
         ptr = line; label = NULL; lineNum++; lineError = FALSE;
 
-        len = strlen(line);
-        if (len > 0 && line[len-1] == '\n') len--;
-        if (len > 0 && line[len-1] == '\r') len--;
-        if (len > 80) {
-            addError(errorList, lineNum, ERR_LINE_TOO_LONG, NULL);
+        if (!checkLineLenFirstPass(line, errorList, lineNum)) {
             error = TRUE;
         } else if (!isEmptyLine(line) && !isCommentLine(line)) {
             token = getToken(&ptr);
-            if (token && token[0] != '\0' && token[strlen(token)-1] == ':') {
-                token[strlen(token)-1] = '\0';
-                if (strlen(token) > 31) { addError(errorList, lineNum, ERR_LABEL_TOO_LONG, token); lineError = TRUE; }
-                else if (!isValidLabelFormat(token)) { addError(errorList, lineNum, ERR_INVALID_LABEL_FORMAT, token); lineError = TRUE; }
-                else if (isReservedKeyword(token)) { addError(errorList, lineNum, ERR_RESERVED_KEYWORD, NULL); lineError = TRUE; }
-                else if (getSymbol(*symbols, token)) { addError(errorList, lineNum, ERR_SYMBOL_REDEFINITION, token); lineError = TRUE; }
-                else if (getMacroContent(macros, token)) { addError(errorList, lineNum, ERR_SYMBOL_REDEFINITION, "label has same name as a macro"); lineError = TRUE; }
-                label = token;
-                token = getToken(&ptr);
-            }
+            checkLabelDef(&token, &label, &ptr, errorList, lineNum, *symbols, macros, &lineError);
+
             if (!token) {
                 if (label) free(label);
                 if (lineError) error = TRUE;
             } else {
                 if (token[0] == '.') {
-                    if (label && !lineError) addSymbol(symbols, label, *DC, ATTR_DATA);
-                    if (strcmp(token, ".db") == 0) { if (!checkData(&ptr, dataHead, DC, 1, filename, lineNum, errorList)) lineError = TRUE; }
-                    else if (strcmp(token, ".dh") == 0) { if (!checkData(&ptr, dataHead, DC, 2, filename, lineNum, errorList)) lineError = TRUE; }
-                    else if (strcmp(token, ".dw") == 0) { if (!checkData(&ptr, dataHead, DC, 4, filename, lineNum, errorList)) lineError = TRUE; }
-                    else if (strcmp(token, ".asciz") == 0) {
-                        skipSpaces(&ptr);
-                        if (*ptr == '\"') {
-                            ptr++;
-                            while (*ptr && *ptr != '\"') addDataNode(dataHead, *ptr++, (*DC)++);
-                            if (*ptr == '\"') { ptr++; addDataNode(dataHead, '\0', (*DC)++); }
-                            else { addError(errorList, lineNum, ERR_EXTRA_TEXT, "missing closing quote"); lineError = TRUE; }
-                        } else { addError(errorList, lineNum, ERR_EXTRA_TEXT, "missing string"); lineError = TRUE; }
-                        checkExtraText(&ptr, errorList, lineNum, &lineError);
-                    } else if (strcmp(token, ".extern") == 0) {
-                        ext = getToken(&ptr);
-                        if (ext) {
-                            SymbolNode *s = getSymbol(*symbols, ext);
-                            if (s && !s->isExternal) { addError(errorList, lineNum, ERR_SYMBOL_REDEFINITION, "external symbol already defined locally"); lineError = TRUE; }
-                            else addSymbol(symbols, ext, 0, ATTR_EXTERNAL);
-                            free(ext);
-                        } else { addError(errorList, lineNum, ERR_EXTRA_TEXT, "missing extern name"); lineError = TRUE; }
-                        checkExtraText(&ptr, errorList, lineNum, &lineError);
-                    } else if (strcmp(token, ".entry") != 0) { addError(errorList, lineNum, ERR_UNKNOWN_COMMAND, token); lineError = TRUE; }
+                    lineError = processDirective(token, &ptr, label, filename, lineNum, symbols, dataHead, DC, errorList, lineError);
                 } else {
-                    op = getOpcode(token);
-                    if (op) {
-                        word = (op->opcode << 26);
-                        if (label && !lineError) addSymbol(symbols, label, *IC, ATTR_CODE);
-
-                        if (op->type == R_TYPE) {
-                            rs=rt=rd=0;
-                            rs = checkRegOperand(&ptr, errorList, lineNum);
-                            if (rs == -1) lineError = TRUE;
-
-                            if (!lineError && !matchComma(&ptr, errorList, lineNum)) lineError = TRUE;
-
-                            if (op->opcode == 0) { /* arithmetic/logic: rs, rt, rd */
-                                if (!lineError) { rt = checkRegOperand(&ptr, errorList, lineNum); if (rt == -1) lineError = TRUE; }
-                                if (!lineError && !matchComma(&ptr, errorList, lineNum)) lineError = TRUE;
-                                if (!lineError) { rd = checkRegOperand(&ptr, errorList, lineNum); if (rd == -1) lineError = TRUE; }
-                            } else { /* copy: rs, rd */
-                                if (!lineError) { rd = checkRegOperand(&ptr, errorList, lineNum); if (rd == -1) lineError = TRUE; }
-                            }
-                            if (!lineError) checkExtraText(&ptr, errorList, lineNum, &lineError);
-                            if (!lineError) { word |= (rs << 21) | (rt << 16) | (rd << 11) | (op->funct << 6); addCodeNode(codeHead, word, *IC, lineNum, NULL); *IC += 4; }
-                        }
-                        else if (op->type == I_TYPE) {
-                            rs=rt=0; immed=0; labDep = NULL;
-                            rs = checkRegOperand(&ptr, errorList, lineNum);
-                            if (rs == -1) lineError = TRUE;
-
-                            if (!lineError && !matchComma(&ptr, errorList, lineNum)) lineError = TRUE;
-
-                            if ((op->opcode >= 10 && op->opcode <= 14) || (op->opcode >= 19 && op->opcode <= 24)) { /* rs, immed, rt */
-                                if (!lineError) immed = checkImmedOperand(&ptr, errorList, lineNum, &lineError);
-                                if (!lineError && !matchComma(&ptr, errorList, lineNum)) lineError = TRUE;
-                                if (!lineError) { rt = checkRegOperand(&ptr, errorList, lineNum); if (rt == -1) lineError = TRUE; }
-                            } else if (op->opcode >= 15 && op->opcode <= 18) { /* cond branch: rs, rt, label */
-                                if (!lineError) { rt = checkRegOperand(&ptr, errorList, lineNum); if (rt == -1) lineError = TRUE; }
-                                if (!lineError && !matchComma(&ptr, errorList, lineNum)) lineError = TRUE;
-                                if (!lineError) labDep = checkLabelOperand(&ptr, errorList, lineNum, &lineError);
-                            }
-                            if (!lineError) checkExtraText(&ptr, errorList, lineNum, &lineError);
-                            if (!lineError) { word |= (rs << 21) | (rt << 16) | (immed & 0xFFFF); addCodeNode(codeHead, word, *IC, lineNum, labDep); *IC += 4; }
-                            if (labDep) free(labDep);
-                        }
-                        else if (op->type == J_TYPE) {
-                            int regBit = 0, addr = 0; labDep = NULL;
-                            if (op->opcode != 63) { /* jmp, la, call */
-                                char *t = getToken(&ptr);
-                                if (t) {
-                                    if (t[0] == '$') {
-                                        if (op->opcode == 31 || op->opcode == 32) { addError(errorList, lineNum, ERR_INVALID_IMMED, "la/call takes a label"); lineError = TRUE; }
-                                        else { regBit = 1; addr = getRegNum(t); if (addr == -1) { addError(errorList, lineNum, ERR_INVALID_REG, t); lineError = TRUE; } }
-                                    } else {
-                                        if (t[0] >= '0' && t[0] <= '9') { addError(errorList, lineNum, ERR_INVALID_IMMED, "J-type takes label or register"); lineError = TRUE; }
-                                        else { regBit = 0; labDep = duplicateString(t); }
-                                    }
-                                    free(t);
-                                } else { addError(errorList, lineNum, ERR_EXTRA_TEXT, "missing operand"); lineError = TRUE; }
-                            }
-                            if (!lineError) checkExtraText(&ptr, errorList, lineNum, &lineError);
-                            if (!lineError) { word |= (regBit << 25) | (addr & 0x1FFFFFF); addCodeNode(codeHead, word, *IC, lineNum, labDep); *IC += 4; }
-                            if (labDep) free(labDep);
-                        }
-                    } else { addError(errorList, lineNum, ERR_UNKNOWN_COMMAND, token); lineError = TRUE; }
+                    lineError = processInstruction(token, &ptr, label, lineNum, symbols, codeHead, IC, errorList, lineError);
                 }
                 if (label) free(label);
                 if (token) free(token);
