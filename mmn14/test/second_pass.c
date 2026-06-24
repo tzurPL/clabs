@@ -25,16 +25,72 @@ void freeExtUsage(ExternalUsage *head) {
     }
 }
 
+/*
+ * processes the .entry directive.
+ * finds the symbol and marks it as an entry, reports error if not found.
+ * the input is string pointer, symbol table, error list, line number, and error flag.
+ * returns void.
+ */
+void procEntry(char **ptr, SymbolNode *symbols, ErrorNode **errorList, int lineNum, boolean *error) {
+    char *ent = getToken(ptr);
+    if (ent) {
+        SymbolNode *sym = getSymbol(symbols, ent);
+        if (sym) sym->isEntry = TRUE;
+        else {
+            addError(errorList, lineNum, ERR_ENTRY_NOT_FOUND, ent);
+            *error = TRUE;
+        }
+        free(ent);
+    }
+}
+
+/*
+ * processes a code node to resolve its label dependency.
+ * calculates the offset or address and updates the word.
+ * the input is the code node, symbol table, external usage list, error list, and error flag.
+ * returns void.
+ */
+void procCodeNode(CodeNode *curr, SymbolNode *symbols, ExternalUsage **extUsage, ErrorNode **errorList, boolean *error) {
+    SymbolNode *sym = getSymbol(symbols, curr->labelDep);
+    unsigned int opcode;
+    int offset;
+
+    if (sym) {
+        opcode = (curr->word >> 26) & 0x3F;
+        if (opcode >= 15 && opcode <= 18) {
+            if (sym->isExternal) {
+                addError(errorList, curr->lineNum, ERR_BRANCH_TOO_FAR, "cannot branch to external label");
+                *error = TRUE;
+            } else {
+                offset = sym->value - curr->address;
+                if (offset > 32767 || offset < -32768) {
+                    addError(errorList, curr->lineNum, ERR_BRANCH_TOO_FAR, curr->labelDep);
+                    *error = TRUE;
+                }
+                curr->word = (curr->word & 0xFFFF0000) | (offset & 0xFFFF);
+            }
+        } else if (opcode >= 30 && opcode <= 32) {
+            if (sym->isExternal) {
+                curr->word = (curr->word & 0xFE000000);
+                addExtUsage(extUsage, sym->name, curr->address);
+            } else {
+                curr->word = (curr->word & 0xFE000000) | (sym->value & 0x1FFFFFF);
+            }
+        }
+    } else {
+        addError(errorList, curr->lineNum, ERR_UNDEFINED_SYMBOL, curr->labelDep);
+        *error = TRUE;
+    }
+}
+
 boolean secondPass(const char *filename, SymbolNode *symbols, CodeNode *codeHead, ExternalUsage **extUsage, ErrorNode **errorList) {
     char amName[MAX_LINE_LENGTH];
     FILE *fp;
     char line[MAX_LINE_LENGTH + 2];
     boolean error = FALSE;
-    char *ptr, *token, *ent;
+    char *ptr, *token;
     CodeNode *curr;
-    SymbolNode *sym;
-    unsigned int opcode;
-    int offset, lineNum = 0;
+    int lineNum = 0;
 
     strcpy(amName, filename); strcat(amName, ".am");
     fp = fopen(amName, "r");
@@ -46,16 +102,7 @@ boolean secondPass(const char *filename, SymbolNode *symbols, CodeNode *codeHead
             token = getToken(&ptr);
             if (token && token[0] != '\0' && token[strlen(token)-1] == ':') { free(token); token = getToken(&ptr); }
             if (token && strcmp(token, ".entry") == 0) {
-                ent = getToken(&ptr);
-                if (ent) {
-                    sym = getSymbol(symbols, ent);
-                    if (sym) sym->isEntry = TRUE;
-                    else {
-                        addError(errorList, lineNum, ERR_ENTRY_NOT_FOUND, ent);
-                        error = TRUE;
-                    }
-                    free(ent);
-                }
+                procEntry(&ptr, symbols, errorList, lineNum, &error);
             }
             if (token) free(token);
         }
@@ -65,33 +112,7 @@ boolean secondPass(const char *filename, SymbolNode *symbols, CodeNode *codeHead
     curr = codeHead;
     while (curr) {
         if (curr->labelDep) {
-            sym = getSymbol(symbols, curr->labelDep);
-            if (sym) {
-                opcode = (curr->word >> 26) & 0x3F;
-                if (opcode >= 15 && opcode <= 18) {
-                    if (sym->isExternal) {
-                        addError(errorList, curr->lineNum, ERR_BRANCH_TOO_FAR, "cannot branch to external label");
-                        error = TRUE;
-                    } else {
-                        offset = sym->value - curr->address;
-                        if (offset > 32767 || offset < -32768) {
-                            addError(errorList, curr->lineNum, ERR_BRANCH_TOO_FAR, curr->labelDep);
-                            error = TRUE;
-                        }
-                        curr->word = (curr->word & 0xFFFF0000) | (offset & 0xFFFF);
-                    }
-                } else if (opcode >= 30 && opcode <= 32) {
-                    if (sym->isExternal) {
-                        curr->word = (curr->word & 0xFE000000);
-                        addExtUsage(extUsage, sym->name, curr->address);
-                    } else {
-                        curr->word = (curr->word & 0xFE000000) | (sym->value & 0x1FFFFFF);
-                    }
-                }
-            } else {
-                addError(errorList, curr->lineNum, ERR_UNDEFINED_SYMBOL, curr->labelDep);
-                error = TRUE;
-            }
+            procCodeNode(curr, symbols, extUsage, errorList, &error);
         }
         curr = curr->next;
     }
