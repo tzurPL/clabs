@@ -4,36 +4,7 @@
 #include "errors.h"
 #include <string.h>
 
-/*
- * checks the length of the given line to ensure it doesn't exceed the maximum allowed length.
- * exits with an error message if the line is too long.
- * the input is the line string, filename for error reporting, and the line number.
- * returns 1 if the line length is valid, 0 otherwise.
- */
-int checkLineLen(const char *line, const char *filename, int lineNum) {
-    int len = strlen(line);
-    if (len > 0 && line[len-1] == '\n') len--;
-    if (len > 0 && line[len-1] == '\r') len--;
-    if (len > 80) {
-        printError(filename, lineNum, ERR_LINE_TOO_LONG, NULL);
-        return 0;
-    }
-    return 1;
-}
 
-/*
- * checks if the current line is an empty line or a comment line.
- * advances the pointer past any leading spaces.
- * the input is a pointer to the input string pointer.
- * returns 1 if the line is empty or a comment, 0 otherwise.
- */
-int checkEmptyOrComment(char **ptr) {
-    skipSpaces(ptr);
-    if (**ptr == '\0' || **ptr == ';') {
-        return 1;
-    }
-    return 0;
-}
 
 /*
  * checks if the first token is a label.
@@ -42,7 +13,7 @@ int checkEmptyOrComment(char **ptr) {
  * returns 1 if a label was found, 0 otherwise.
  */
 int checkLabel(char **token, char **label, char **ptr, boolean *hasLabel) {
-    if (*token && (*token)[strlen(*token)-1] == ':') {
+    if (isLabelDef(*token)) {
         *hasLabel = TRUE;
         *label = *token;
         *token = getToken(ptr);
@@ -122,9 +93,10 @@ boolean preprocess(const char *filename, MacroNode **outMacros) {
 
         lineNum++;
 
-        if (!checkLineLen(line, filename, lineNum)) {
+        if (!checkLineLen(line)) {
+            printError(filename, lineNum, ERR_LINE_TOO_LONG, NULL);
             error = TRUE;
-        } else if (checkEmptyOrComment(&ptr)) {
+        } else if (isEmptyLine(line) || isCommentLine(line)) {
             if (!inMacro) appendToOutput(&output, &outSize, line);
         } else {
             token = getToken(&ptr);

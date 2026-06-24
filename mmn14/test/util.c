@@ -150,3 +150,17 @@ void checkExtraText(char **ptr, ErrorNode **errorList, int lineNum, boolean *lin
         *lineError = TRUE;
     }
 }
+
+boolean checkLineLen(const char *line) {
+    int len = strlen(line);
+    if (len > 0 && line[len-1] == '\n') len--;
+    if (len > 0 && line[len-1] == '\r') len--;
+    return len <= 80;
+}
+
+boolean isLabelDef(const char *token) {
+    if (token && token[0] != '\0' && token[strlen(token)-1] == ':') {
+        return TRUE;
+    }
+    return FALSE;
+}

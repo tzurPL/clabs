@@ -61,29 +61,13 @@ boolean checkData(char **ptr, DataNode **dataHead, int *DC, int size, const char
 }
 
 /*
- * checks the length of the given line to ensure it doesn't exceed the maximum allowed length.
- * the input is the line string, error list, and the line number.
- * returns 1 if the line length is valid, 0 otherwise.
- */
-int checkLineLenFirstPass(const char *line, ErrorNode **errorList, int lineNum) {
-    int len = strlen(line);
-    if (len > 0 && line[len-1] == '\n') len--;
-    if (len > 0 && line[len-1] == '\r') len--;
-    if (len > 80) {
-        addError(errorList, lineNum, ERR_LINE_TOO_LONG, NULL);
-        return 0;
-    }
-    return 1;
-}
-
-/*
  * checks if the token is a valid label definition.
  * updates the label pointer if a valid label is found and sets lineError if there are issues.
  * the input is the token, label pointer, string pointer, error list, line number, symbols and macros.
  * returns 1 if it is a label definition (valid or invalid), 0 otherwise.
  */
 int checkLabelDef(char **token, char **label, char **ptr, ErrorNode **errorList, int lineNum, SymbolNode *symbols, MacroNode *macros, boolean *lineError) {
-    if (*token && (*token)[0] != '\0' && (*token)[strlen(*token)-1] == ':') {
+    if (isLabelDef(*token)) {
         (*token)[strlen(*token)-1] = '\0';
         if (strlen(*token) > 31) { addError(errorList, lineNum, ERR_LABEL_TOO_LONG, *token); *lineError = TRUE; }
         else if (!isValidLabelFormat(*token)) { addError(errorList, lineNum, ERR_INVALID_LABEL_FORMAT, *token); *lineError = TRUE; }
@@ -271,7 +255,8 @@ boolean firstPass(const char *filename, SymbolNode **symbols, CodeNode **codeHea
     while (fgets(line, sizeof(line), fp)) {
         ptr = line; label = NULL; lineNum++; lineError = FALSE;
 
-        if (!checkLineLenFirstPass(line, errorList, lineNum)) {
+        if (!checkLineLen(line)) {
+            addError(errorList, lineNum, ERR_LINE_TOO_LONG, NULL);
             error = TRUE;
         } else if (!isEmptyLine(line) && !isCommentLine(line)) {
             token = getToken(&ptr);

@@ -36,4 +36,7 @@ short checkImmedOperand(char **ptr, ErrorNode **errorList, int lineNum, boolean 
 char *checkLabelOperand(char **ptr, ErrorNode **errorList, int lineNum, boolean *lineError);
 void checkExtraText(char **ptr, ErrorNode **errorList, int lineNum, boolean *lineError);
 
+boolean checkLineLen(const char *line);
+boolean isLabelDef(const char *token);
+
 #endif
