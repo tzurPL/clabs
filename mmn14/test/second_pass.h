@@ -6,13 +6,13 @@
 #include "first_pass.h"
 #include "errors.h"
 
-typedef struct ExternalUsage {
+typedef struct ExtUsage {
     char *name;
     int address;
-    struct ExternalUsage *next;
-} ExternalUsage;
+    struct ExtUsage *next;
+} ExtUsage;
 
-boolean secondPass(const char *filename, SymbolNode *symbols, CodeNode *codeHead, ExternalUsage **extUsage, ErrorNode **errorList);
-void freeExtUsage(ExternalUsage *head);
+boolean secondPass(const char *filename, SymbolNode *symbols, CodeNode *codeHead, ExtUsage **extUsage, ErrorNode **errorList);
+void freeExtUsage(ExtUsage *head);
 
 #endif

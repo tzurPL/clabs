@@ -13,7 +13,7 @@
 #include <string.h>
 
 /* writeOutput func: generates the files after assembly */
-void writeOutput(const char *filename, SymbolNode *symbols, CodeNode *codeHead, DataNode *dataHead, ExternalUsage *extUsage, int IC, int DC) {
+void writeOutput(const char *filename, SymbolNode *symbols, CodeNode *codeHead, DataNode *dataHead, ExtUsage *extUsage, int IC, int DC) {
     char name[MAX_LINE_LENGTH];
     FILE *f;
     CodeNode *c;
@@ -91,7 +91,7 @@ void processFile(const char *filename) {
     SymbolNode *symbols = NULL;
     CodeNode *codeHead = NULL;
     DataNode *dataHead = NULL;
-    ExternalUsage *extUsage = NULL;
+    ExtUsage *extUsage = NULL;
     ErrorNode *errorList = NULL;
     MacroNode *macros = NULL;
     int IC = IC_INIT, DC = 0;

@@ -61,10 +61,75 @@ void appendToOutput(char **code, size_t *size, const char *str) {
     *size += len;
 }
 
+/*
+ * processes a macro definition start.
+ * updates the macro state and reports errors if redefinition occurs.
+ * the input is macro definition status, inMacro flag, error flag, filename, line number, macros, macro name, and macro content pointer.
+ * returns void.
+ */
+void procMacroDef(int macroDefStatus, boolean *inMacro, boolean *error, const char *filename, int lineNum, MacroNode *macros, char *macroName, char **macroContent) {
+    *inMacro = TRUE;
+    if (macroDefStatus == -1) *error = TRUE;
+    else {
+        if (getMacroContent(macros, macroName)) {
+            printError(filename, lineNum, ERR_MACRO_REDEFINITION, macroName);
+            *error = TRUE;
+        }
+    }
+    *macroContent = (char *)safeMalloc(1);
+    (*macroContent)[0] = '\0';
+}
+
+/*
+ * writes the output to the .am file if there were no errors.
+ */
+void writeAm(boolean *error, const char *filename, const char *amName, const char *output) {
+    FILE *amF;
+    if (!*error) {
+        amF = fopen(amName, "w");
+        if (!amF) {
+            printError(filename, 0, ERR_OPEN_FILE, amName);
+            *error = TRUE;
+        } else {
+            fprintf(amF, "%s", output);
+            fclose(amF);
+        }
+    }
+}
+
+/*
+ * processes a regular line or a macro expansion.
+ * appends to macro content if in a macro, otherwise expands or appends the original line.
+ * the input is inMacro flag, macros, token, line, macro content pointer, label, hasLabel flag, output string pointer, and output size.
+ * returns void.
+ */
+void procLine(boolean inMacro, MacroNode *macros, char *token, char *line, char **macroContent, char *label, boolean hasLabel, char **output, size_t *outSize) {
+    char *exp;
+    if (inMacro) {
+        /* Append the original line to the macro content */
+        *macroContent = (char *)safeRealloc(*macroContent, strlen(*macroContent) + strlen(line) + 1);
+        strcat(*macroContent, line);
+    } else {
+        exp = getMacroContent(macros, token);
+        if (exp) {
+            if (hasLabel) {
+                /* Keep the label, but inject the macro expansion */
+                char temp[MAX_LINE_LENGTH + 2];
+                sprintf(temp, "%s %s", label, exp);
+                appendToOutput(output, outSize, temp);
+            } else {
+                appendToOutput(output, outSize, exp);
+            }
+        } else {
+            appendToOutput(output, outSize, line); /* Print original line */
+        }
+    }
+}
+
 /* preprocess func: runs the preprocessor phase on the input file, expanding macros and removing comments/empty lines. Returns boolean for success/fail and output macros. */
 boolean preprocess(const char *filename, MacroNode **outMacros) {
-    char asName[MAX_LINE_LENGTH], amName[MAX_LINE_LENGTH];
-    FILE *asF, *amF;
+    char asName[MAX_LINE_LENGTH], amName[MAX_LINE_LENGTH];/* */
+    FILE *asF;
     char line[MAX_LINE_LENGTH + 2];
     MacroNode *macros = NULL;
     boolean inMacro = FALSE, error = FALSE;
@@ -87,6 +152,7 @@ boolean preprocess(const char *filename, MacroNode **outMacros) {
         return FALSE;
     }
 
+    /*go through the file line by linee */
     while (fgets(line, sizeof(line), asF)) {
         char *ptr = line;
         boolean hasLabel = FALSE;
@@ -113,40 +179,13 @@ boolean preprocess(const char *filename, MacroNode **outMacros) {
                 } else {
                     macroDefStatus = checkMacroDef(token, &ptr, macroName, filename, lineNum);
                     if (macroDefStatus != 0) {
-                        inMacro = TRUE;
-                        if (macroDefStatus == -1) error = TRUE;
-                        else {
-                            if (getMacroContent(macros, macroName)) {
-                                printError(filename, lineNum, ERR_MACRO_REDEFINITION, macroName);
-                                error = TRUE;
-                            }
-                        }
-                        macroContent = (char *)safeMalloc(1);
-                        macroContent[0] = '\0';
+                        procMacroDef(macroDefStatus, &inMacro, &error, filename, lineNum, macros, macroName, &macroContent);
                     } else if (strcmp(token, "mcroend") == 0) {
                         addMacro(&macros, macroName, macroContent);
                         free(macroContent);
                         inMacro = FALSE;
                     } else {
-                        if (inMacro) {
-                            /* Append the original line to the macro content */
-                            macroContent = (char *)safeRealloc(macroContent, strlen(macroContent) + strlen(line) + 1);
-                            strcat(macroContent, line);
-                        } else {
-                            exp = getMacroContent(macros, token);
-                            if (exp) {
-                                if (hasLabel) {
-                                    /* Keep the label, but inject the macro expansion */
-                                    char temp[MAX_LINE_LENGTH + 2];
-                                    sprintf(temp, "%s %s", label, exp);
-                                    appendToOutput(&output, &outSize, temp);
-                                } else {
-                                    appendToOutput(&output, &outSize, exp);
-                                }
-                            } else {
-                                appendToOutput(&output, &outSize, line); /* Print original line */
-                            }
-                        }
+                        procLine(inMacro, macros, token, line, &macroContent, label, hasLabel, &output, &outSize);
                     }
 
                     if (token) free(token);
@@ -158,16 +197,7 @@ boolean preprocess(const char *filename, MacroNode **outMacros) {
 
     fclose(asF);
 
-    if (!error) {
-        amF = fopen(amName, "w");
-        if (!amF) {
-            printError(filename, 0, ERR_OPEN_FILE, amName);
-            error = TRUE;
-        } else {
-            fprintf(amF, "%s", output);
-            fclose(amF);
-        }
-    }
+    writeAm(&error, filename, amName, output);
 
     free(output);
 

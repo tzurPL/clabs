@@ -3,22 +3,22 @@
 #include "errors.h"
 #include <string.h>
 
-void addExtUsage(ExternalUsage **head, const char *name, int address) {
-    ExternalUsage *newNode = (ExternalUsage *)safeMalloc(sizeof(ExternalUsage));
+void addExtUsage(ExtUsage **head, const char *name, int address) {
+    ExtUsage *newNode = (ExtUsage *)safeMalloc(sizeof(ExtUsage));
     newNode->name = strdupp(name);
     newNode->address = address;
     newNode->next = NULL;
     if (!*head) *head = newNode;
     else {
-        ExternalUsage *curr = *head;
+        ExtUsage *curr = *head;
         while (curr->next) curr = curr->next;
         curr->next = newNode;
     }
 }
 
-void freeExtUsage(ExternalUsage *head) {
+void freeExtUsage(ExtUsage *head) {
     while (head) {
-        ExternalUsage *temp = head;
+        ExtUsage *temp = head;
         head = head->next;
         free(temp->name);
         free(temp);
@@ -50,7 +50,7 @@ void procEntry(char **ptr, SymbolNode *symbols, ErrorNode **errorList, int lineN
  * the input is the code node, symbol table, external usage list, error list, and error flag.
  * returns void.
  */
-void procCodeNode(CodeNode *curr, SymbolNode *symbols, ExternalUsage **extUsage, ErrorNode **errorList, boolean *error) {
+void procCodeNode(CodeNode *curr, SymbolNode *symbols, ExtUsage **extUsage, ErrorNode **errorList, boolean *error) {
     SymbolNode *sym = getSymbol(symbols, curr->labelDep);
     unsigned int opcode;
     int offset;
@@ -83,7 +83,7 @@ void procCodeNode(CodeNode *curr, SymbolNode *symbols, ExternalUsage **extUsage,
     }
 }
 
-boolean secondPass(const char *filename, SymbolNode *symbols, CodeNode *codeHead, ExternalUsage **extUsage, ErrorNode **errorList) {
+boolean secondPass(const char *filename, SymbolNode *symbols, CodeNode *codeHead, ExtUsage **extUsage, ErrorNode **errorList) {
     char amName[MAX_LINE_LENGTH];
     FILE *fp;
     char line[MAX_LINE_LENGTH + 2];
