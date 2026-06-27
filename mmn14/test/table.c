@@ -14,12 +14,12 @@ void addSymbol(SymbolNode **head, const char *name, int value, Attribute attr) {
         *head = node;
     }
 
-    if (attr == ATTR_CODE) node->isCode = TRUE;
-    else if (attr == ATTR_DATA) node->isData = TRUE;
-    else if (attr == ATTR_EXTERNAL) { node->isExternal = TRUE; node->value = 0; }
-    else if (attr == ATTR_ENTRY) node->isEntry = TRUE;
+    if (attr == CODE) node->isCode = TRUE;
+    else if (attr == DATA) node->isData = TRUE;
+    else if (attr == EXTERNAL) { node->isExternal = TRUE; node->value = 0; }
+    else if (attr == ENTRY) node->isEntry = TRUE;
 
-    if (attr != ATTR_ENTRY && attr != ATTR_EXTERNAL) node->value = value;
+    if (attr != ENTRY && attr != EXTERNAL) node->value = value;
 }
 
 /* getSymbol func: finds a symbol in the list by its name. */

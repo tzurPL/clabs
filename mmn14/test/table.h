@@ -4,7 +4,7 @@
 #include "globals.h"
 
 /* Symbol Table */
-typedef enum { ATTR_CODE, ATTR_DATA, ATTR_EXTERNAL, ATTR_ENTRY } Attribute;
+typedef enum { CODE, DATA, EXTERNAL, ENTRY } Attribute;
 
 typedef struct SymbolNode {
     char *name;

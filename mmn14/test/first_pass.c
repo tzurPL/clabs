@@ -109,7 +109,7 @@ void processExtern(char **ptr, SymbolNode **symbols, ErrorNode **errorList, int 
     if (ext) {
         SymbolNode *s = getSymbol(*symbols, ext);
         if (s && !s->isExternal) { addError(errorList, lineNum, ERR_SYMBOL_REDEFINITION, "external symbol already defined locally"); *lineError = TRUE; }
-        else addSymbol(symbols, ext, 0, ATTR_EXTERNAL);
+        else addSymbol(symbols, ext, 0, EXTERNAL);
         free(ext);
     } else { addError(errorList, lineNum, ERR_EXTRA_TEXT, "missing extern name"); *lineError = TRUE; }
     checkExtraText(ptr, errorList, lineNum, lineError);
@@ -122,14 +122,14 @@ void processExtern(char **ptr, SymbolNode **symbols, ErrorNode **errorList, int 
  * returns TRUE if an error occurred during processing, FALSE otherwise.
  */
 boolean processDirective(char *token, char **ptr, char *label, const char *filename, int lineNum, SymbolNode **symbols, DataNode **dataHead, int *DC, ErrorNode **errorList, boolean lineError) {
-    if (label && !lineError) addSymbol(symbols, label, *DC, ATTR_DATA);
+    if (label && !lineError) addSymbol(symbols, label, *DC, DATA);
     if (strcmp(token, ".db") == 0) { if (!checkData(ptr, dataHead, DC, 1, filename, lineNum, errorList)) lineError = TRUE; }
     else if (strcmp(token, ".dh") == 0) { if (!checkData(ptr, dataHead, DC, 2, filename, lineNum, errorList)) lineError = TRUE; }
     else if (strcmp(token, ".dw") == 0) { if (!checkData(ptr, dataHead, DC, 4, filename, lineNum, errorList)) lineError = TRUE; }
     else if (strcmp(token, ".asciz") == 0) { processAsciz(ptr, dataHead, DC, errorList, lineNum, &lineError); }
     else if (strcmp(token, ".extern") == 0) { processExtern(ptr, symbols, errorList, lineNum, &lineError); }
     else if (strcmp(token, ".entry") != 0) { addError(errorList, lineNum, ERR_UNKNOWN_COMMAND, token); lineError = TRUE; }
-    
+
     return lineError;
 }
 
@@ -220,7 +220,7 @@ boolean processInstruction(char *token, char **ptr, char *label, int lineNum, Sy
     unsigned int word;
     if (op) {
         word = (op->opcode << 26);
-        if (label && !lineError) addSymbol(symbols, label, *IC, ATTR_CODE);
+        if (label && !lineError) addSymbol(symbols, label, *IC, CODE);
 
         if (op->type == R_TYPE) {
             processRType(ptr, op, lineNum, codeHead, IC, errorList, &lineError, word);
