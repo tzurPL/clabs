@@ -46,14 +46,14 @@ void procEntry(char **ptr, SymbolNode *symbols, ErrorNode **errorList, int lineN
 
 /*
  * processes a code node to resolve its label dependency.
- * calculates the offset or address and updates the word.
+ * calculates the immed or address and updates the word.
  * the input is the code node, symbol table, external usage list, error list, and error flag.
  * returns void.
  */
 void procCodeNode(CodeNode *curr, SymbolNode *symbols, ExtUsage **extUsage, ErrorNode **errorList, boolean *error) {
     SymbolNode *sym = getSymbol(symbols, curr->labelDep);
     unsigned int opcode;
-    int offset;
+    int immed;
 
     if (sym) {
         opcode = (curr->word >> 26) & 0x3F;
@@ -62,12 +62,12 @@ void procCodeNode(CodeNode *curr, SymbolNode *symbols, ExtUsage **extUsage, Erro
                 addError(errorList, curr->lineNum, ERR_BRANCH_TOO_FAR, "cannot branch to external label");
                 *error = TRUE;
             } else {
-                offset = sym->value - curr->address;
-                if (offset > 32767 || offset < -32768) {
+                immed = sym->value - curr->address;
+                if (immed > 32767 || immed < -32768) {
                     addError(errorList, curr->lineNum, ERR_BRANCH_TOO_FAR, curr->labelDep);
                     *error = TRUE;
                 }
-                curr->word = (curr->word & 0xFFFF0000) | (offset & 0xFFFF);
+                curr->word = (curr->word & 0xFFFF0000) | (immed & 0xFFFF);
             }
         } else if (opcode >= 30 && opcode <= 32) {
             if (sym->isExternal) {

@@ -87,7 +87,7 @@ int checkLabelDef(char **token, char **label, char **ptr, ErrorNode **errorList,
  * the input is string pointer, data head, DC, error list, line number, and lineError flag.
  * returns void.
  */
-void processAsciz(char **ptr, DataNode **dataHead, int *DC, ErrorNode **errorList, int lineNum, boolean *lineError) {
+void procAsciz(char **ptr, DataNode **dataHead, int *DC, ErrorNode **errorList, int lineNum, boolean *lineError) {
     skipSpaces(ptr);
     if (**ptr == '\"') {
         (*ptr)++;
@@ -104,7 +104,7 @@ void processAsciz(char **ptr, DataNode **dataHead, int *DC, ErrorNode **errorLis
  * the input is string pointer, symbol table, error list, line number, and lineError flag.
  * returns void.
  */
-void processExtern(char **ptr, SymbolNode **symbols, ErrorNode **errorList, int lineNum, boolean *lineError) {
+void procExt(char **ptr, SymbolNode **symbols, ErrorNode **errorList, int lineNum, boolean *lineError) {
     char *ext = getToken(ptr);
     if (ext) {
         SymbolNode *s = getSymbol(*symbols, ext);
@@ -121,13 +121,13 @@ void processExtern(char **ptr, SymbolNode **symbols, ErrorNode **errorList, int 
  * the input is the token, string pointer, label, filename, line number, symbols, data head, DC, and error list.
  * returns TRUE if an error occurred during processing, FALSE otherwise.
  */
-boolean processDirective(char *token, char **ptr, char *label, const char *filename, int lineNum, SymbolNode **symbols, DataNode **dataHead, int *DC, ErrorNode **errorList, boolean lineError) {
+boolean procDirective(char *token, char **ptr, char *label, const char *filename, int lineNum, SymbolNode **symbols, DataNode **dataHead, int *DC, ErrorNode **errorList, boolean lineError) {
     if (label && !lineError) addSymbol(symbols, label, *DC, DATA);
     if (strcmp(token, ".db") == 0) { if (!checkData(ptr, dataHead, DC, 1, filename, lineNum, errorList)) lineError = TRUE; }
     else if (strcmp(token, ".dh") == 0) { if (!checkData(ptr, dataHead, DC, 2, filename, lineNum, errorList)) lineError = TRUE; }
     else if (strcmp(token, ".dw") == 0) { if (!checkData(ptr, dataHead, DC, 4, filename, lineNum, errorList)) lineError = TRUE; }
-    else if (strcmp(token, ".asciz") == 0) { processAsciz(ptr, dataHead, DC, errorList, lineNum, &lineError); }
-    else if (strcmp(token, ".extern") == 0) { processExtern(ptr, symbols, errorList, lineNum, &lineError); }
+    else if (strcmp(token, ".asciz") == 0) { procAsciz(ptr, dataHead, DC, errorList, lineNum, &lineError); }
+    else if (strcmp(token, ".extern") == 0) { procExt(ptr, symbols, errorList, lineNum, &lineError); }
     else if (strcmp(token, ".entry") != 0) { addError(errorList, lineNum, ERR_UNKNOWN_COMMAND, token); lineError = TRUE; }
 
     return lineError;
@@ -139,7 +139,7 @@ boolean processDirective(char *token, char **ptr, char *label, const char *filen
  * the input is string pointer, opcode, line number, code head, IC, error list, and lineError flag.
  * returns void.
  */
-void processRType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int *IC, ErrorNode **errorList, boolean *lineError, unsigned int word) {
+void procRType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int *IC, ErrorNode **errorList, boolean *lineError, unsigned int word) {
     int rs=0, rt=0, rd=0;
     rs = checkRegOperand(ptr, errorList, lineNum);
     if (rs == -1) *lineError = TRUE;
@@ -163,7 +163,7 @@ void processRType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int 
  * the input is string pointer, opcode, line number, code head, IC, error list, and lineError flag.
  * returns void.
  */
-void processIType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int *IC, ErrorNode **errorList, boolean *lineError, unsigned int word) {
+void procIType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int *IC, ErrorNode **errorList, boolean *lineError, unsigned int word) {
     int rs=0, rt=0; short immed=0; char *labDep = NULL;
     rs = checkRegOperand(ptr, errorList, lineNum);
     if (rs == -1) *lineError = TRUE;
@@ -190,7 +190,7 @@ void processIType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int 
  * the input is string pointer, opcode, line number, code head, IC, error list, and lineError flag.
  * returns void.
  */
-void processJType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int *IC, ErrorNode **errorList, boolean *lineError, unsigned int word) {
+void procJType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int *IC, ErrorNode **errorList, boolean *lineError, unsigned int word) {
     int regBit = 0, addr = 0; char *labDep = NULL;
     if (op->opcode != 63) { /* jmp, la, call */
         char *t = getToken(ptr);
@@ -215,7 +215,7 @@ void processJType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int 
  * the input is the token, string pointer, label, line number, symbols, code head, IC, error list, and lineError flag.
  * returns TRUE if an error occurred during processing, FALSE otherwise.
  */
-boolean processInstruction(char *token, char **ptr, char *label, int lineNum, SymbolNode **symbols, CodeNode **codeHead, int *IC, ErrorNode **errorList, boolean lineError) {
+boolean procInstruction(char *token, char **ptr, char *label, int lineNum, SymbolNode **symbols, CodeNode **codeHead, int *IC, ErrorNode **errorList, boolean lineError) {
     Opcode *op = getOpcode(token);
     unsigned int word;
     if (op) {
@@ -223,13 +223,13 @@ boolean processInstruction(char *token, char **ptr, char *label, int lineNum, Sy
         if (label && !lineError) addSymbol(symbols, label, *IC, CODE);
 
         if (op->type == R_TYPE) {
-            processRType(ptr, op, lineNum, codeHead, IC, errorList, &lineError, word);
+            procRType(ptr, op, lineNum, codeHead, IC, errorList, &lineError, word);
         }
         else if (op->type == I_TYPE) {
-            processIType(ptr, op, lineNum, codeHead, IC, errorList, &lineError, word);
+            procIType(ptr, op, lineNum, codeHead, IC, errorList, &lineError, word);
         }
         else if (op->type == J_TYPE) {
-            processJType(ptr, op, lineNum, codeHead, IC, errorList, &lineError, word);
+            procJType(ptr, op, lineNum, codeHead, IC, errorList, &lineError, word);
         }
     } else {
         addError(errorList, lineNum, ERR_UNKNOWN_COMMAND, token);
@@ -267,9 +267,9 @@ boolean firstPass(const char *filename, SymbolNode **symbols, CodeNode **codeHea
                 if (lineError) error = TRUE;
             } else {
                 if (token[0] == '.') {
-                    lineError = processDirective(token, &ptr, label, filename, lineNum, symbols, dataHead, DC, errorList, lineError);
+                    lineError = procDirective(token, &ptr, label, filename, lineNum, symbols, dataHead, DC, errorList, lineError);
                 } else {
-                    lineError = processInstruction(token, &ptr, label, lineNum, symbols, codeHead, IC, errorList, lineError);
+                    lineError = procInstruction(token, &ptr, label, lineNum, symbols, codeHead, IC, errorList, lineError);
                 }
                 if (label) free(label);
                 if (token) free(token);
