@@ -1,88 +1,112 @@
+/*
+ * second_pass.c
+ * mmn14
+ * Tzur Pinto Lazar
+ */
+
 #include "second_pass.h"
 #include "util.h"
 #include "errors.h"
 #include <string.h>
 
+/*
+ * addExtUsage func
+ * adds a new external usage node to the external usage list.
+ * the input is a pointer to the head of the external usage list, the external symbol name, and the address it was used at.
+ * returns void.
+ */
 void addExtUsage(ExtUsage **head, const char *name, int address) {
-    ExtUsage *newNode = (ExtUsage *)safeMalloc(sizeof(ExtUsage));
-    newNode->name = strdupp(name);
-    newNode->address = address;
+    ExtUsage *newNode = (ExtUsage *)safeMalloc(sizeof(ExtUsage));/*allocate memory for new node*/
+    newNode->name = strdupp(name);/*duplicate name*/
+    newNode->address = address;/*set the address*/
     newNode->next = NULL;
-    if (!*head) *head = newNode;
+    if (!*head) *head = newNode;/*if list is empty, set as head*/
     else {
         ExtUsage *curr = *head;
-        while (curr->next) curr = curr->next;
-        curr->next = newNode;
-    }
-}
-
-void freeExtUsage(ExtUsage *head) {
-    while (head) {
-        ExtUsage *temp = head;
-        head = head->next;
-        free(temp->name);
-        free(temp);
+        while (curr->next) curr = curr->next;/*find the end of the list*/
+        curr->next = newNode;/*append the new node*/
     }
 }
 
 /*
- * processes the .entry directive.
- * finds the symbol and marks it as an entry, reports error if not found.
+ * freeExtUsage func
+ * frees the memory allocated for the external usage list.
+ * the input is the head of the external usage list.
+ * returns void.
+ */
+void freeExtUsage(ExtUsage *head) {
+    while (head) {/*iterate through the list*/
+        ExtUsage *temp = head;
+        head = head->next;/*move to next node*/
+        free(temp->name);/*free the name string*/
+        free(temp);/*free the node itself*/
+    }
+}
+
+/*
+ * procEntry func
+ * processes the .entry directive. finds the symbol and marks it as an entry, reports error if not found.
  * the input is string pointer, symbol table, error list, line number, and error flag.
  * returns void.
  */
 void procEntry(char **ptr, SymbolNode *symbols, ErrorNode **errorList, int lineNum, boolean *error) {
-    char *ent = getToken(ptr);
-    if (ent) {
-        SymbolNode *sym = getSymbol(symbols, ent);
-        if (sym) sym->isEntry = TRUE;
+    char *ent = getToken(ptr);/*get the entry symbol name*/
+    if (ent) {/*if an entry symbol was provided*/
+        SymbolNode *sym = getSymbol(symbols, ent);/*look up symbol in table*/
+        if (sym) sym->isEntry = TRUE;/*mark as entry*/
         else {
-            addError(errorList, lineNum, ERR_ENTRY_NOT_FOUND, ent);
-            *error = TRUE;
+            addError(errorList, lineNum, ERR_ENTRY_NOT_FOUND, ent);/*report error if not found*/
+            *error = TRUE;/*set error flag*/
         }
-        free(ent);
+        free(ent);/*free the token*/
     }
 }
 
 /*
- * processes a code node to resolve its label dependency.
- * calculates the immed or address and updates the word.
+ * procCodeNode func
+ * processes a code node to resolve its label dependency. calculates the immed or address and updates the word.
  * the input is the code node, symbol table, external usage list, error list, and error flag.
  * returns void.
  */
 void procCodeNode(CodeNode *curr, SymbolNode *symbols, ExtUsage **extUsage, ErrorNode **errorList, boolean *error) {
-    SymbolNode *sym = getSymbol(symbols, curr->labelDep);
+    SymbolNode *sym = getSymbol(symbols, curr->labelDep);/*look up the dependent symbol*/
     unsigned int opcode;
     int immed;
 
-    if (sym) {
-        opcode = (curr->word >> 26) & ((1UL << 6) - 1);
-        if (opcode >= 15 && opcode <= 18) {
-            if (sym->isExternal) {
-                addError(errorList, curr->lineNum, ERR_BRANCH_TOO_FAR, "cannot branch to external label");
-                *error = TRUE;
-            } else {
-                immed = sym->value - curr->address;
-                if (immed > 32767 || immed < -32768) {
-                    addError(errorList, curr->lineNum, ERR_BRANCH_TOO_FAR, curr->labelDep);
-                    *error = TRUE;
+    if (sym) {/*if symbol was found*/
+        opcode = (curr->word >> 26) & ((1UL << 6) - 1);/*extract opcode*/
+        if (opcode >= 15 && opcode <= 18) {/*if it is a conditional branch*/
+            if (sym->isExternal) {/*if branching to an external label*/
+                addError(errorList, curr->lineNum, ERR_BRANCH_TOO_FAR, "cannot branch to external label");/*report error*/
+                *error = TRUE;/*set error flag*/
+            } else {/*local label*/
+                immed = sym->value - curr->address;/*calculate offset*/
+                if (immed > 32767 || immed < -32768) {/*check offset bounds*/
+                    addError(errorList, curr->lineNum, ERR_BRANCH_TOO_FAR, curr->labelDep);/*report error if out of bounds*/
+                    *error = TRUE;/*set error flag*/
                 }
-                curr->word = (curr->word & ~((1UL << 16) - 1)) | (immed & ((1UL << 16) - 1));
+                curr->word = (curr->word & ~((1UL << 16) - 1)) | (immed & ((1UL << 16) - 1));/*update instruction word*/
             }
-        } else if (opcode >= 30 && opcode <= 32) {
-            if (sym->isExternal) {
-                curr->word = (curr->word & ~((1UL << 25) - 1));
-                addExtUsage(extUsage, sym->name, curr->address);
-            } else {
-                curr->word = (curr->word & ~((1UL << 25) - 1)) | (sym->value & ((1UL << 25) - 1));
+        } else if (opcode >= 30 && opcode <= 32) {/*if it is a jump instruction*/
+            if (sym->isExternal) {/*if jumping to an external label*/
+                curr->word = (curr->word & ~((1UL << 25) - 1));/*clear address bits*/
+                addExtUsage(extUsage, sym->name, curr->address);/*record external usage*/
+            } else {/*local label*/
+                curr->word = (curr->word & ~((1UL << 25) - 1)) | (sym->value & ((1UL << 25) - 1));/*encode direct address*/
             }
         }
-    } else {
-        addError(errorList, curr->lineNum, ERR_UNDEFINED_SYMBOL, curr->labelDep);
-        *error = TRUE;
+    } else {/*symbol not found*/
+        addError(errorList, curr->lineNum, ERR_UNDEFINED_SYMBOL, curr->labelDep);/*report error*/
+        *error = TRUE;/*set error flag*/
     }
 }
 
+/*
+ * secondPass func
+ * executes the second pass of the assembler, resolving label addresses in code nodes and marking entry symbols.
+ * the input is the filename, symbol table, code list, a pointer to store external usages, and the error list.
+ * returns boolean indicating whether the pass succeeded without errors.
+ */
 boolean secondPass(const char *filename, SymbolNode *symbols, CodeNode *codeHead, ExtUsage **extUsage, ErrorNode **errorList) {
     char amName[MAX_LINE_LENGTH];
     FILE *fp;
@@ -92,27 +116,27 @@ boolean secondPass(const char *filename, SymbolNode *symbols, CodeNode *codeHead
     CodeNode *curr;
     int lineNum = 0;
 
-    strcpy(amName, filename); strcat(amName, ".am");
-    fp = fopen(amName, "r");
+    strcpy(amName, filename); strcat(amName, ".am");/*append .am extension*/
+    fp = fopen(amName, "r");/*open the file for reading*/
     if (!fp) return FALSE;
 
-    while (fgets(line, sizeof(line), fp)) {
+    while (fgets(line, sizeof(line), fp)) {/*read line by line*/
         ptr = line; lineNum++;
-        if (!isEmptyLine(line) && !isCommentLine(line)) {
-            token = getToken(&ptr);
-            if (token && token[0] != '\0' && token[strlen(token)-1] == ':') { free(token); token = getToken(&ptr); }
-            if (token && strcmp(token, ".entry") == 0) {
+        if (!isEmptyLine(line) && !isCommentLine(line)) {/*ignore empty and comment lines*/
+            token = getToken(&ptr);/*get first token*/
+            if (token && token[0] != '\0' && token[strlen(token)-1] == ':') { free(token); token = getToken(&ptr); }/*skip label if present*/
+            if (token && strcmp(token, ".entry") == 0) {/*process entry directive*/
                 procEntry(&ptr, symbols, errorList, lineNum, &error);
             }
             if (token) free(token);
         }
     }
-    fclose(fp);
+    fclose(fp);/*close the file*/
 
     curr = codeHead;
-    while (curr) {
+    while (curr) {/*iterate through code nodes to resolve dependencies*/
         if (curr->labelDep) {
-            procCodeNode(curr, symbols, extUsage, errorList, &error);
+            procCodeNode(curr, symbols, extUsage, errorList, &error);/*resolve dependency*/
         }
         curr = curr->next;
     }

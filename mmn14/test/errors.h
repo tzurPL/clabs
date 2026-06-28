@@ -1,3 +1,9 @@
+/*
+ * errors.h
+ * mmn14
+ * Tzur Pinto Lazar
+ */
+
 #ifndef ERRORS_H
 #define ERRORS_H
 
@@ -33,16 +39,36 @@ typedef struct ErrorNode {
     struct ErrorNode *next;
 } ErrorNode;
 
-/* addError func: collects an error into a list to be printed later. */
+/*
+ * addError func
+ * collects an error into a list to be printed later.
+ * the input is a pointer to the head of the error list, line number, error type, and optional extra info.
+ * returns void.
+ */
 void addError(ErrorNode **head, int lineNum, ErrorType type, const char *extraInfo);
 
-/* printErrors func: sorts and prints all collected errors. */
+/*
+ * printErrors func
+ * sorts and prints all collected errors.
+ * the input is the filename and the head of the error list.
+ * returns void.
+ */
 void printErrors(const char *filename, ErrorNode *head);
 
-/* freeErrors func: cleans up the error list. */
+/*
+ * freeErrors func
+ * cleans up the error list by freeing its memory.
+ * the input is the head of the error list.
+ * returns void.
+ */
 void freeErrors(ErrorNode *head);
 
-/* printError for critical/simple errors that shouldn't be collected */
+/*
+ * printError func
+ * prints a critical or simple error that shouldn't be collected in the list.
+ * the input is the filename, line number, error type, and optional extra info.
+ * returns void.
+ */
 void printError(const char *filename, int lineNum, ErrorType type, const char *extraInfo);
 
 #endif

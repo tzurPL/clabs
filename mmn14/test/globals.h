@@ -1,3 +1,10 @@
+/*
+ * globals.h
+ * mmn14
+ * Tzur Pinto Lazar
+*/
+
+
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
