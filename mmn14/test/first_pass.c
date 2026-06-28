@@ -42,8 +42,8 @@ boolean checkData(char **ptr, DataNode **dataHead, int *DC, int size, const char
         val = atol(t);
         free(t);
         if (size == 1) addDataNode(dataHead, (unsigned char)val, (*DC)++);
-        else if (size == 2) { addDataNode(dataHead, val & 0xFF, (*DC)++); addDataNode(dataHead, (val >> 8) & 0xFF, (*DC)++); }
-        else if (size == 4) { addDataNode(dataHead, val & 0xFF, (*DC)++); addDataNode(dataHead, (val >> 8) & 0xFF, (*DC)++); addDataNode(dataHead, (val >> 16) & 0xFF, (*DC)++); addDataNode(dataHead, (val >> 24) & 0xFF, (*DC)++); }
+        else if (size == 2) { addDataNode(dataHead, val & ((1UL << 8) - 1), (*DC)++); addDataNode(dataHead, (val >> 8) & ((1UL << 8) - 1), (*DC)++); }
+        else if (size == 4) { addDataNode(dataHead, val & ((1UL << 8) - 1), (*DC)++); addDataNode(dataHead, (val >> 8) & ((1UL << 8) - 1), (*DC)++); addDataNode(dataHead, (val >> 16) & ((1UL << 8) - 1), (*DC)++); addDataNode(dataHead, (val >> 24) & ((1UL << 8) - 1), (*DC)++); }
 
         skipSpaces(ptr);
         if (**ptr == ',') {
@@ -180,7 +180,7 @@ void procIType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int *IC
         if (!*lineError) labDep = checkLabelOperand(ptr, errorList, lineNum, lineError);
     }
     if (!*lineError) checkExtraText(ptr, errorList, lineNum, lineError);
-    if (!*lineError) { word |= (rs << 21) | (rt << 16) | (immed & 0xFFFF); addCodeNode(codeHead, word, *IC, lineNum, labDep); *IC += 4; }
+    if (!*lineError) { word |= (rs << 21) | (rt << 16) | (immed & ((1UL << 16) - 1)); addCodeNode(codeHead, word, *IC, lineNum, labDep); *IC += 4; }
     if (labDep) free(labDep);
 }
 
@@ -206,7 +206,7 @@ void procJType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int *IC
         } else { addError(errorList, lineNum, ERR_EXTRA_TEXT, "missing operand"); *lineError = TRUE; }
     }
     if (!*lineError) checkExtraText(ptr, errorList, lineNum, lineError);
-    if (!*lineError) { word |= (regBit << 25) | (addr & 0x1FFFFFF); addCodeNode(codeHead, word, *IC, lineNum, labDep); *IC += 4; }
+    if (!*lineError) { word |= (regBit << 25) | (addr & ((1UL << 25) - 1)); addCodeNode(codeHead, word, *IC, lineNum, labDep); *IC += 4; }
     if (labDep) free(labDep);
 }
 

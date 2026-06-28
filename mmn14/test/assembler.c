@@ -30,7 +30,7 @@ void writeOutput(const char *filename, SymbolNode *symbols, CodeNode *codeHead, 
         fprintf(f, "%d %d\n", IC - 100, DC);
         c = codeHead;
         while (c) {
-            fprintf(f, "%04d %02X %02X %02X %02X\n", c->address, c->word & 0xFF, (c->word >> 8) & 0xFF, (c->word >> 16) & 0xFF, (c->word >> 24) & 0xFF);
+            fprintf(f, "%04d %02X %02X %02X %02X\n", c->address, (unsigned int)(c->word & ((1UL << 8) - 1)), (unsigned int)((c->word >> 8) & ((1UL << 8) - 1)), (unsigned int)((c->word >> 16) & ((1UL << 8) - 1)), (unsigned int)((c->word >> 24) & ((1UL << 8) - 1)));
             c = c->next;
         }
         d = dataHead;

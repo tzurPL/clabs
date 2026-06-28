@@ -135,7 +135,7 @@ boolean preprocess(const char *filename, MacroNode **outMacros) {
     boolean inMacro = FALSE, error = FALSE;
     char macroName[MAX_LABEL_LENGTH];
     char *macroContent = NULL;
-    char *token, *exp, *label;
+    char *token, *label;
     int lineNum = 0, macroDefStatus;
 
     char *output = (char *)safeMalloc(1);

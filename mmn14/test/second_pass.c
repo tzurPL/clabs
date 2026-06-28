@@ -56,7 +56,7 @@ void procCodeNode(CodeNode *curr, SymbolNode *symbols, ExtUsage **extUsage, Erro
     int immed;
 
     if (sym) {
-        opcode = (curr->word >> 26) & 0x3F;
+        opcode = (curr->word >> 26) & ((1UL << 6) - 1);
         if (opcode >= 15 && opcode <= 18) {
             if (sym->isExternal) {
                 addError(errorList, curr->lineNum, ERR_BRANCH_TOO_FAR, "cannot branch to external label");
@@ -67,14 +67,14 @@ void procCodeNode(CodeNode *curr, SymbolNode *symbols, ExtUsage **extUsage, Erro
                     addError(errorList, curr->lineNum, ERR_BRANCH_TOO_FAR, curr->labelDep);
                     *error = TRUE;
                 }
-                curr->word = (curr->word & 0xFFFF0000) | (immed & 0xFFFF);
+                curr->word = (curr->word & ~((1UL << 16) - 1)) | (immed & ((1UL << 16) - 1));
             }
         } else if (opcode >= 30 && opcode <= 32) {
             if (sym->isExternal) {
-                curr->word = (curr->word & 0xFE000000);
+                curr->word = (curr->word & ~((1UL << 25) - 1));
                 addExtUsage(extUsage, sym->name, curr->address);
             } else {
-                curr->word = (curr->word & 0xFE000000) | (sym->value & 0x1FFFFFF);
+                curr->word = (curr->word & ~((1UL << 25) - 1)) | (sym->value & ((1UL << 25) - 1));
             }
         }
     } else {
