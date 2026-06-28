@@ -13,7 +13,7 @@
 
 /*
  * preprocess func
- * runs the preprocessor phase on the input file, expanding macros and removing comments/empty lines.
+ * runs the preprocessor on the input file expanding macros and removing comments and empty lines.
  * the input is the filename and a pointer to store the generated macro list.
  * returns a boolean indicating whether the preprocessing succeeded without errors.
  */

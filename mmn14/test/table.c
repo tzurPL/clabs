@@ -10,11 +10,11 @@
 
 /*
  * addSymbol func
- * adds a symbol to the symbol table or updates its attributes if it exists.
- * the input is a pointer to the head of the symbol table, the symbol name, its value, and its attribute type.
+ * adds a symbol to the symbol table or updates it if it exists.
+ * the input is a pointer to the head of the symbol table, the symbol name, its value, and its type type.
  * returns void.
  */
-void addSymbol(SymbolNode **head, const char *name, int value, Attribute attr) {
+void addSymbol(SymbolNode **head, const char *name, int value, Type type) {
     SymbolNode *node = getSymbol(*head, name);
     if (!node) {/*if symbol doesn't exist, create it*/
         node = (SymbolNode *)safeMalloc(sizeof(SymbolNode));
@@ -25,20 +25,20 @@ void addSymbol(SymbolNode **head, const char *name, int value, Attribute attr) {
         *head = node;/*add to head of list*/
     }
 
-    /*update the attributes of the symbol*/
-    if (attr == CODE) node->isCode = TRUE;
-    else if (attr == DATA) node->isData = TRUE;
-    else if (attr == EXTERNAL) { node->isExternal = TRUE; node->value = 0; }
-    else if (attr == ENTRY) node->isEntry = TRUE;
+    /*update the type of the symbol*/
+    if (type == CODE) node->isCode = TRUE;
+    else if (type == DATA) node->isData = TRUE;
+    else if (type == EXTERNAL) { node->isExternal = TRUE; node->value = 0; }
+    else if (type == ENTRY) node->isEntry = TRUE;
 
-    if (attr != ENTRY && attr != EXTERNAL) node->value = value;/*update value if applicable*/
+    if (type != ENTRY && type != EXTERNAL) node->value = value;/*update value if applicable*/
 }
 
 /*
  * getSymbol func
  * finds a symbol in the list by its name.
  * the input is the head of the symbol table and the name of the symbol to find.
- * returns a pointer to the SymbolNode if found, or NULL otherwise.
+ * returns a pointer to the SymbolNode if found or NULL if not.
  */
 SymbolNode *getSymbol(SymbolNode *head, const char *name) {
     while (head) {/*iterate through the list*/

@@ -10,7 +10,7 @@
 #include "globals.h"
 
 /* Symbol Table */
-typedef enum { CODE, DATA, EXTERNAL, ENTRY } Attribute;
+typedef enum { CODE, DATA, EXTERNAL, ENTRY } Type;
 
 typedef struct SymbolNode {
     char *name;
@@ -24,17 +24,17 @@ typedef struct SymbolNode {
 
 /*
  * addSymbol func
- * adds a symbol to the symbol table or updates its attributes if it exists.
- * the input is a pointer to the head of the symbol table, the symbol name, its value, and its attribute type.
+ * adds a symbol to the symbol table or updates it if it exists.
+ * the input is a pointer to the head of the symbol table, the symbol name, its value, and its type type.
  * returns void.
  */
-void addSymbol(SymbolNode **head, const char *name, int value, Attribute attr);
+void addSymbol(SymbolNode **head, const char *name, int value, Type type);
 
 /*
  * getSymbol func
  * finds a symbol in the list by its name.
  * the input is the head of the symbol table and the name of the symbol to find.
- * returns a pointer to the SymbolNode if found, or NULL otherwise.
+ * returns a pointer to the SymbolNode if found or NULL if not.
  */
 SymbolNode *getSymbol(SymbolNode *head, const char *name);
 

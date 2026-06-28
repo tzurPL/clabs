@@ -47,12 +47,12 @@ boolean isReservedKeyword(const char *name) {
 }
 
 /*
- * isValidLabelFormat func
+ * checkLabelN func
  * checks if a given string follows the valid format for a label.
  * the input is the name of the label.
  * returns TRUE if the format is valid, FALSE otherwise.
  */
-boolean isValidLabelFormat(const char *name) {
+boolean checkLabelN(const char *name) {
     int i = 0;
     if (!name || name[0] == '\0') return FALSE;/*check for empty string*/
     if (!isalpha((unsigned char)name[0])) return FALSE;/*check if first character is alphabetic*/

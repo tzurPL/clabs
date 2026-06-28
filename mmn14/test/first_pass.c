@@ -96,7 +96,7 @@ int checkLabelDef(char **token, char **label, char **ptr, ErrorNode **errorList,
         (*token)[strlen(*token)-1] = '\0';/*remove colon*/
         /*validate label format and report errors if necessary*/
         if (strlen(*token) > 31) { addError(errorList, lineNum, ERR_LABEL_TOO_LONG, *token); *lineError = TRUE; }
-        else if (!isValidLabelFormat(*token)) { addError(errorList, lineNum, ERR_INVALID_LABEL_FORMAT, *token); *lineError = TRUE; }
+        else if (!checkLabelN(*token)) { addError(errorList, lineNum, ERR_INVALID_LABEL_FORMAT, *token); *lineError = TRUE; }
         else if (isReservedKeyword(*token)) { addError(errorList, lineNum, ERR_RESERVED_KEYWORD, NULL); *lineError = TRUE; }
         else if (getSymbol(symbols, *token)) { addError(errorList, lineNum, ERR_SYMBOL_REDEFINITION, *token); *lineError = TRUE; }
         else if (getMacroContent(macros, *token)) { addError(errorList, lineNum, ERR_SYMBOL_REDEFINITION, "label has same name as a macro"); *lineError = TRUE; }

@@ -36,12 +36,12 @@ Opcode *getOpcode(const char *name);
 boolean isReservedKeyword(const char *name);
 
 /*
- * isValidLabelFormat func
+ * checkLabelN func
  * checks if a given string follows the valid format for a label.
  * the input is the name of the label.
  * returns TRUE if the format is valid, FALSE otherwise.
  */
-boolean isValidLabelFormat(const char *name);
+boolean checkLabelN(const char *name);
 
 /*
  * safeMalloc func
