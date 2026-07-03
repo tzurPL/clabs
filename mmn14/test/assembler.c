@@ -33,19 +33,19 @@ void writeOutput(const char *filename, SymbolNode *symbols, CodeNode *codeHead, 
     f = fopen(name, "w");/*open for writing*/
     if (f) {/*if file opened successfully*/
         /*header: total instruction bytes and total data bytes*/
-        fprintf(f, "%d %d\n", IC - 100, DC);
+        fprintf(f, "%d %d\n", IC - IC_INIT, DC);
         c = codeHead;
         while (c) {/*iterate through code nodes*/
-            fprintf(f, "%04d %02X %02X %02X %02X\n", c->address, (unsigned int)(c->word & ((1UL << 8) - 1)), (unsigned int)((c->word >> 8) & ((1UL << 8) - 1)), (unsigned int)((c->word >> 16) & ((1UL << 8) - 1)), (unsigned int)((c->word >> 24) & ((1UL << 8) - 1)));
+            fprintf(f, "%04d %02X %02X %02X %02X\n", c->address, (unsigned int)(c->word & ((1UL << BYTE_SIZE) - 1)), (unsigned int)((c->word >> BYTE1) & ((1UL << BYTE_SIZE) - 1)), (unsigned int)((c->word >> BYTE2) & ((1UL << BYTE_SIZE) - 1)), (unsigned int)((c->word >> BYTE3) & ((1UL << BYTE_SIZE) - 1)));
             c = c->next;
         }
         d = dataHead;
         while (d) {/*iterate through data nodes*/
-            if (count % 4 == 0) fprintf(f, "%04d", d->address);/*print address for a new line of data*/
+            if (count % NUM_BYTES_WORD == 0) fprintf(f, "%04d", d->address);/*print address for a new line of data*/
             fprintf(f, " %02X", d->byte);/*print data byte*/
             d = d->next;
             count++;
-            if (count % 4 == 0 || !d) fprintf(f, "\n");/*newline after 4 bytes or at end*/
+            if (count % NUM_BYTES_WORD == 0 || !d) fprintf(f, "\n");/*newline after 4 bytes or at end*/
         }
         fclose(f);/*close the file*/
     }
@@ -154,7 +154,7 @@ void processFile(const char *filename) {
  */
 int main(int argc, char *argv[]) {
     int i;
-    if (argc < 2) {/*check if arguments were provided*/
+    if (argc < MIN_ARGS) {/*check if arguments were provided*/
         fprintf(stderr, "Usage: %s file1 ...\n", argv[0]);
         return 1;
     }

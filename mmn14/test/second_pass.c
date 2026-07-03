@@ -74,25 +74,25 @@ void procCodeNode(CodeNode *curr, SymbolNode *symbols, ExtUsage **extUsage, Erro
     int immed;
 
     if (sym) {/*if symbol was found*/
-        opcode = (curr->word >> 26) & ((1UL << 6) - 1);/*extract opcode*/
-        if (opcode >= 15 && opcode <= 18) {/*if it is a conditional branch*/
+        opcode = (curr->word >> OPCODE_POS) & ((1UL << OPCODE_SIZE) - 1);/*extract opcode*/
+        if (opcode >= MIN_BRANCH_OPCODE && opcode <= MAX_BRANCH_OPCODE) {/*if it is a conditional branch*/
             if (sym->isExternal) {/*if branching to an external label*/
                 addError(errorList, curr->lineNum, ERR_BRANCH_TOO_FAR, "cannot branch to external label");/*report error*/
                 *error = TRUE;/*set error flag*/
             } else {/*local label*/
                 immed = sym->value - curr->address;/*calculate offset*/
-                if (immed > 32767 || immed < -32768) {/*check offset bounds*/
+                if (immed > MAX_IMMED || immed < MIN_IMMED) {/*check offset bounds*/
                     addError(errorList, curr->lineNum, ERR_BRANCH_TOO_FAR, curr->labelDep);/*report error if out of bounds*/
                     *error = TRUE;/*set error flag*/
                 }
-                curr->word = (curr->word & ~((1UL << 16) - 1)) | (immed & ((1UL << 16) - 1));/*update instruction word*/
+                curr->word = (curr->word & ~((1UL << IMMED_SIZE) - 1)) | (immed & ((1UL << IMMED_SIZE) - 1));/*update instruction word*/
             }
-        } else if (opcode >= 30 && opcode <= 32) {/*if it is a jump instruction*/
+        } else if (opcode >= MIN_JMP_OPCODE && opcode <= MAX_JMP_OPCODE) {/*if it is a jump instruction*/
             if (sym->isExternal) {/*if jumping to an external label*/
-                curr->word = (curr->word & ~((1UL << 25) - 1));/*clear address bits*/
+                curr->word = (curr->word & ~((1UL << ADDR_SIZE) - 1));/*clear address bits*/
                 addExtUsage(extUsage, sym->name, curr->address);/*record external usage*/
             } else {/*local label*/
-                curr->word = (curr->word & ~((1UL << 25) - 1)) | (sym->value & ((1UL << 25) - 1));/*encode direct address*/
+                curr->word = (curr->word & ~((1UL << ADDR_SIZE) - 1)) | (sym->value & ((1UL << ADDR_SIZE) - 1));/*encode direct address*/
             }
         }
     } else {/*symbol not found*/
@@ -110,7 +110,7 @@ void procCodeNode(CodeNode *curr, SymbolNode *symbols, ExtUsage **extUsage, Erro
 boolean secondPass(const char *filename, SymbolNode *symbols, CodeNode *codeHead, ExtUsage **extUsage, ErrorNode **errorList) {
     char amName[MAX_LINE_LENGTH];
     FILE *fp;
-    char line[MAX_LINE_LENGTH + 2];
+    char line[MAX_LINE_LENGTH + EXTRA_CHARS];
     boolean error = FALSE;
     char *ptr, *token;
     CodeNode *curr;

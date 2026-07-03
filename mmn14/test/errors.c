@@ -85,8 +85,8 @@ void printError(const char *filename, int lineNum, ErrorType type, const char *e
     /*print corresponding error message*/
     if (type == ERR_OPEN_FILE) fprintf(stdout, "Could not open file");
     else if (type == ERR_ALLOC_FAIL) fprintf(stdout, "Not enough memory");
-    else if (type == ERR_LINE_TOO_LONG) fprintf(stdout, "Line is too long (max 80 chars)");
-    else if (type == ERR_LABEL_TOO_LONG) fprintf(stdout, "Label is too long (max 31 chars)");
+    else if (type == ERR_LINE_TOO_LONG) fprintf(stdout, "Line is too long (max %d chars)", MAX_AS_LINE_LEN);
+    else if (type == ERR_LABEL_TOO_LONG) fprintf(stdout, "Label is too long (max %d chars)", MAX_LABEL_LEN);
     else if (type == ERR_INVALID_LABEL_FORMAT) fprintf(stdout, "Invalid label or macro name format");
     else if (type == ERR_UNDEFINED_MACRO) fprintf(stdout, "Undefined macro");
     else if (type == ERR_MACRO_REDEFINITION) fprintf(stdout, "Macro redefinition");

@@ -149,7 +149,7 @@ void checkExtraText(char **ptr, ErrorNode **errorList, int lineNum, boolean *lin
 
 /*
  * checkLineLen func
- * checks if the length of a line is within the allowed limit (max 80 chars).
+ * checks if the length of a line is within the allowed limit (max MAX_LINE_CHARS chars).
  * the input is the string line to check.
  * returns TRUE if the length is valid, FALSE otherwise.
  */

@@ -128,7 +128,7 @@ void procLine(boolean inMacro, MacroNode *macros, char *token, char *line, char 
         if (exp) {/*if it is a macro call*/
             if (hasLabel) {/*if there is a label before the macro call*/
                 /*keep the label and extand the macro*/
-                char temp[MAX_LINE_LENGTH + 2];/*place to hold the new temp line created*/
+                char temp[MAX_LINE_LENGTH + EXTRA_CHARS];/*place to hold the new temp line created*/
                 sprintf(temp, "%s %s", label, exp);/*save to the temp line the line afte expantion*/
                 appendToOutput(output, outSize, temp);/*append to output*/
             } else {/*no label before*/
@@ -149,7 +149,7 @@ void procLine(boolean inMacro, MacroNode *macros, char *token, char *line, char 
 boolean preprocess(const char *filename, MacroNode **outMacros) {
     char asName[MAX_LINE_LENGTH], amName[MAX_LINE_LENGTH];/*a place for the name of the file*/
     FILE *asF;/*a file pointer for the og .as file*/
-    char line[MAX_LINE_LENGTH + 2];/*a place to save the line including the \n and \0*/
+    char line[MAX_LINE_LENGTH + EXTRA_CHARS];/*a place to save the line including the \n and \0*/
     MacroNode *macros = NULL;/*list for the macros and their contents*/
     boolean inMacro = FALSE, error = FALSE;/*flags for if error and if it is in a macro*/
     char macroName[MAX_LABEL_LENGTH];

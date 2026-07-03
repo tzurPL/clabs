@@ -177,7 +177,7 @@ int getRegNum(const char *token) {
         char *endptr;
         const char *p = token + 1;
         if (!*p) return -1;
-        num = (int)strtol(p, &endptr, 10);/*convert remaining string to integer*/
+        num = (int)strtol(p, &endptr, BASE_10);/*convert remaining string to integer*/
         if (*endptr != '\0') return -1;/*check for invalid characters*/
         if (num >= 0 && num < REG_COUNT) return num;/*check if register is within bounds*/
     }
@@ -268,7 +268,7 @@ boolean checkLineLen(const char *line) {
     int len = strlen(line);/*get initial length*/
     if (len > 0 && line[len-1] == '\n') len--;/*ignore trailing newline*/
     if (len > 0 && line[len-1] == '\r') len--;/*ignore trailing carriage return*/
-    return len <= 80;/*check against maximum allowed length*/
+    return len <= MAX_AS_LINE_LEN;/*check against maximum allowed length*/
 }
 
 /*
