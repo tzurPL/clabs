@@ -27,14 +27,14 @@ Opcode *getOpcode(const char *name) {
         {"la", 31, 0, J_TYPE},   {"call", 32, 0, J_TYPE}, {"stop", 63, 0, J_TYPE}, {"hlt", 63, 0, J_TYPE}
     };
     int i;
-    for (i = 0; i < (int)(sizeof(opcodes) / sizeof(Opcode)); i++) { /*iterate through opcode table*/
+    for (i = 0; i < (int)(sizeof(opcodes) / sizeof(Opcode)); i++) {
         if (strcmp(opcodes[i].name, name) == 0) {
             Opcode *ret = (Opcode *)safeMalloc(sizeof(Opcode));
             *ret = opcodes[i];
-            return ret; /*return dynamically allocated opcode if matches*/
+            return ret;
         }
     }
-    return NULL; /*return null if not found*/
+    return NULL;
 }
 
 /*
@@ -47,7 +47,7 @@ boolean isReservedKeyword(const char *name) {
     Opcode *op = getOpcode(name);
     if (op) {
         free(op);
-        return TRUE; /*if name is an opcode, it's reserved*/
+        return TRUE;/*if name is an opcode, it's reserved*/
     }
     /*check against all directive and macro keywords*/
     if (strcmp(name, "db") == 0 || strcmp(name, "dh") == 0 || strcmp(name, "dw") == 0 || strcmp(name, "asciz") == 0 ||
@@ -55,7 +55,7 @@ boolean isReservedKeyword(const char *name) {
         strcmp(name, "mcroend") == 0) {
         return TRUE;
     }
-    return FALSE; /*not reserved*/
+    return FALSE;/*not reserved*/
 }
 
 /*
@@ -66,11 +66,11 @@ boolean isReservedKeyword(const char *name) {
  */
 boolean checkLabelN(const char *name) {
     int i = 0;
-    if (!name || name[0] == '\0') { return FALSE; /*check for empty string*/ }
-    if (!isalpha((unsigned char)name[0])) { return FALSE; /*check if first character is alphabetic*/ }
-    for (i = 1; name[i]; i++) { /*iterate through characters*/
+    if (!name || name[0] == '\0') { return FALSE;/*check for empty string*/ }
+    if (!isalpha((unsigned char)name[0])) { return FALSE;/*check if first character is alphabetic*/ }
+    for (i = 1; name[i]; i++) {/*iterate through characters*/
         if (!isalnum((unsigned char)name[i]) && name[i] != '_') {
-            return FALSE; /*check for alphanumeric or underscore*/
+            return FALSE;/*check for alphanumeric or underscore*/
         }
     }
     return TRUE;
@@ -83,12 +83,12 @@ boolean checkLabelN(const char *name) {
  * returns a pointer to the allocated memory.
  */
 void *safeMalloc(size_t size) {
-    void *ptr = malloc(size); /*attempt allocation*/
+    void *ptr = malloc(size);/*attempt allocation*/
     if (!ptr) {
         printError(NULL, 0, ERR_ALLOC_FAIL, NULL);
         exit(1);
-    }           /*print error and exit if failed*/
-    return ptr; /*return successful allocation*/
+    }/*print error and exit if failed*/
+    return ptr;/*return successful allocation*/
 }
 
 /*
@@ -98,12 +98,12 @@ void *safeMalloc(size_t size) {
  * returns a pointer to the newly allocated memory.
  */
 void *safeRealloc(void *ptr, size_t size) {
-    void *newPtr = realloc(ptr, size); /*attempt reallocation*/
+    void *newPtr = realloc(ptr, size);/*attempt reallocation*/
     if (!newPtr && size > 0) {
         printError(NULL, 0, ERR_ALLOC_FAIL, NULL);
         exit(1);
-    }              /*print error and exit if failed*/
-    return newPtr; /*return successful reallocation*/
+    }/*print error and exit if failed*/
+    return newPtr;/*return successful reallocation*/
 }
 
 /*
@@ -114,10 +114,10 @@ void *safeRealloc(void *ptr, size_t size) {
  */
 char *strdupp(const char *s) {
     char *d;
-    if (!s) { return NULL; /*check for null input*/ }
-    d = (char *)safeMalloc(strlen(s) + 1); /*allocate memory for string + null terminator*/
-    strcpy(d, s);                          /*copy string content*/
-    return d;                              /*return duplicated string*/
+    if (!s) { return NULL;/*check for null input*/ }
+    d = (char *)safeMalloc(strlen(s) + 1);/*allocate memory for string + null terminator*/
+    strcpy(d, s);/*copy string content*/
+    return d;/*return duplicated string*/
 }
 
 /*
@@ -127,7 +127,7 @@ char *strdupp(const char *s) {
  * returns void.
  */
 void skipSpaces(char **str) {
-    while (**str != '\0' && isspace((unsigned char)**str)) { /*advance past whitespace*/
+    while (**str != '\0' && isspace((unsigned char)**str)) {/*advance past whitespace*/
         (*str)++;
     }
 }
@@ -139,11 +139,11 @@ void skipSpaces(char **str) {
  * returns TRUE if the line is empty or only whitespace, FALSE otherwise.
  */
 boolean isEmptyLine(const char *str) {
-    while (*str) { /*iterate through characters*/
-        if (!isspace((unsigned char)*str)) { return FALSE; /*if non-space found, not empty*/ }
-        str++; /*move to next character*/
+    while (*str) {/*iterate through characters*/
+        if (!isspace((unsigned char)*str)) { return FALSE;/*if non-space found, not empty*/ }
+        str++;/*move to next character*/
     }
-    return TRUE; /*only spaces found*/
+    return TRUE;/*only spaces found*/
 }
 
 /*
@@ -155,9 +155,9 @@ boolean isEmptyLine(const char *str) {
 boolean isCommentLine(const char *str) {
     const char *p = str;
     while (*p && isspace((unsigned char)*p)) {
-        p++; /*skip leading spaces*/
+        p++;/*skip leading spaces*/
     }
-    return (*p == ';'); /*check if first non-space character is semicolon*/
+    return (*p == ';');/*check if first non-space character is semicolon*/
 }
 
 /*
@@ -169,19 +169,19 @@ boolean isCommentLine(const char *str) {
 char *getToken(char **str) {
     char *start, *token;
     int len = 0;
-    skipSpaces(str); /*skip leading spaces*/
-    if (**str == '\0' || **str == ';') { return NULL; /*return null if end of string or comment*/ }
+    skipSpaces(str);/*skip leading spaces*/
+    if (**str == '\0' || **str == ';') { return NULL;/*return null if end of string or comment*/ }
 
     start = *str;
-    while (**str && !isspace((unsigned char)**str) && **str != ',' && **str != ';') { /*count token length*/
+    while (**str && !isspace((unsigned char)**str) && **str != ',' && **str != ';') {/*count token length*/
         (*str)++;
         len++;
     }
 
-    if (len == 0) { return NULL; /*return null if empty*/ }
-    token = (char *)safeMalloc(len + 1); /*allocate memory for token*/
-    strncpy(token, start, len);          /*copy token characters*/
-    token[len] = '\0';                   /*null-terminate string*/
+    if (len == 0) { return NULL;/*return null if empty*/ }
+    token = (char *)safeMalloc(len + 1);/*allocate memory for token*/
+    strncpy(token, start, len);/*copy token characters*/
+    token[len] = '\0';/*null-terminate string*/
     return token;
 }
 
@@ -192,16 +192,16 @@ char *getToken(char **str) {
  * returns the register number if valid, or -1 otherwise.
  */
 int getRegNum(const char *token) {
-    if (token && token[0] == '$') { /*check for register prefix*/
+    if (token && token[0] == '$') {/*check for register prefix*/
         int num;
         char *endptr;
         const char *p = token + 1;
         if (!*p) { return -1; }
-        num = (int)strtol(p, &endptr, 10); /*convert remaining string to integer*/
-        if (*endptr != '\0') { return -1; /*check for invalid characters*/ }
-        if (num >= 0 && num < REG_COUNT) { return num; /*check if register is within bounds*/ }
+        num = (int)strtol(p, &endptr, 10);/*convert remaining string to integer*/
+        if (*endptr != '\0') { return -1;/*check for invalid characters*/ }
+        if (num >= 0 && num < REG_COUNT) { return num;/*check if register is within bounds*/ }
     }
-    return -1; /*return -1 if invalid*/
+    return -1;/*return -1 if invalid*/
 }
 
 /* Bulletproof parsing helpers */
@@ -212,13 +212,13 @@ int getRegNum(const char *token) {
  * returns TRUE if a comma was found, FALSE otherwise.
  */
 boolean matchComma(char **ptr, ErrorNode **errorList, int lineNum) {
-    skipSpaces(ptr);    /*skip leading spaces*/
-    if (**ptr == ',') { /*check for comma*/
-        (*ptr)++;       /*move past comma*/
-        return TRUE;    /*comma found*/
+    skipSpaces(ptr);/*skip leading spaces*/
+    if (**ptr == ',') {/*check for comma*/
+        (*ptr)++;/*move past comma*/
+        return TRUE;/*comma found*/
     }
-    addError(errorList, lineNum, ERR_MISSING_COMMA, NULL); /*report missing comma error*/
-    return FALSE;                                          /*comma not found*/
+    addError(errorList, lineNum, ERR_MISSING_COMMA, NULL);/*report missing comma error*/
+    return FALSE;/*comma not found*/
 }
 
 /*
@@ -229,15 +229,15 @@ boolean matchComma(char **ptr, ErrorNode **errorList, int lineNum) {
  */
 int checkRegOperand(char **ptr, ErrorNode **errorList, int lineNum) {
     int reg;
-    char *t = getToken(ptr); /*get the next token*/
+    char *t = getToken(ptr);/*get the next token*/
     if (!t) {
         addError(errorList, lineNum, ERR_EXTRA_TEXT, "missing operand");
         return -1;
-    }                   /*report missing operand*/
-    reg = getRegNum(t); /*extract register number*/
-    if (reg == -1) { addError(errorList, lineNum, ERR_INVALID_REG, t); /*report invalid register*/ }
-    free(t);    /*free the token*/
-    return reg; /*return register number*/
+    }/*report missing operand*/
+    reg = getRegNum(t);/*extract register number*/
+    if (reg == -1) { addError(errorList, lineNum, ERR_INVALID_REG, t);/*report invalid register*/ }
+    free(t);/*free the token*/
+    return reg;/*return register number*/
 }
 
 /*
@@ -248,15 +248,15 @@ int checkRegOperand(char **ptr, ErrorNode **errorList, int lineNum) {
  */
 short checkImmedOperand(char **ptr, ErrorNode **errorList, int lineNum, boolean *lineError) {
     short val;
-    char *t = getToken(ptr); /*get the next token*/
+    char *t = getToken(ptr);/*get the next token*/
     if (!t) {
         addError(errorList, lineNum, ERR_EXTRA_TEXT, "missing operand");
         *lineError = TRUE;
         return 0;
-    }                     /*report missing operand*/
-    val = (short)atoi(t); /*convert token to short integer*/
-    free(t);              /*free the token*/
-    return val;           /*return immediate value*/
+    }/*report missing operand*/
+    val = (short)atoi(t);/*convert token to short integer*/
+    free(t);/*free the token*/
+    return val;/*return immediate value*/
 }
 
 /*
@@ -266,13 +266,13 @@ short checkImmedOperand(char **ptr, ErrorNode **errorList, int lineNum, boolean 
  * returns a newly allocated string containing the label, or NULL if missing (sets error flag).
  */
 char *checkLabelOperand(char **ptr, ErrorNode **errorList, int lineNum, boolean *lineError) {
-    char *t = getToken(ptr); /*get the next token*/
+    char *t = getToken(ptr);/*get the next token*/
     if (!t) {
         addError(errorList, lineNum, ERR_EXTRA_TEXT, "missing operand");
         *lineError = TRUE;
         return NULL;
-    }         /*report missing operand*/
-    return t; /*return label token*/
+    }/*report missing operand*/
+    return t;/*return label token*/
 }
 
 /*
@@ -282,11 +282,11 @@ char *checkLabelOperand(char **ptr, ErrorNode **errorList, int lineNum, boolean 
  * returns void.
  */
 void checkExtraText(char **ptr, ErrorNode **errorList, int lineNum, boolean *lineError) {
-    skipSpaces(ptr); /*skip leading spaces*/
+    skipSpaces(ptr);/*skip leading spaces*/
     if (**ptr != '\0' && **ptr != ';' && **ptr != '\n' &&
-        **ptr != '\r') {                                    /*check if anything besides comments or newlines remain*/
-        addError(errorList, lineNum, ERR_EXTRA_TEXT, *ptr); /*report extra text error*/
-        *lineError = TRUE;                                  /*set error flag*/
+        **ptr != '\r') {/*check if anything besides comments or newlines remain*/
+        addError(errorList, lineNum, ERR_EXTRA_TEXT, *ptr);/*report extra text error*/
+        *lineError = TRUE;/*set error flag*/
     }
 }
 
@@ -297,10 +297,10 @@ void checkExtraText(char **ptr, ErrorNode **errorList, int lineNum, boolean *lin
  * returns TRUE if the length is valid, FALSE otherwise.
  */
 boolean checkLineLen(const char *line) {
-    int len = strlen(line); /*get initial length*/
-    if (len > 0 && line[len - 1] == '\n') { len--; /*ignore trailing newline*/ }
-    if (len > 0 && line[len - 1] == '\r') { len--; /*ignore trailing carriage return*/ }
-    return len <= MAX_AS_LINE_LEN; /*check against maximum allowed length*/
+    int len = strlen(line);/*get initial length*/
+    if (len > 0 && line[len - 1] == '\n') { len--;/*ignore trailing newline*/ }
+    if (len > 0 && line[len - 1] == '\r') { len--;/*ignore trailing carriage return*/ }
+    return len <= MAX_AS_LINE_LEN;/*check against maximum allowed length*/
 }
 
 /*
@@ -310,8 +310,8 @@ boolean checkLineLen(const char *line) {
  * returns TRUE if it is a label definition, FALSE otherwise.
  */
 boolean isLabelDef(const char *token) {
-    if (token && token[0] != '\0' && token[strlen(token) - 1] == ':') { /*check if token ends with colon*/
-        return TRUE;                                                    /*is label definition*/
+    if (token && token[0] != '\0' && token[strlen(token) - 1] == ':') {/*check if token ends with colon*/
+        return TRUE;/*is label definition*/
     }
-    return FALSE; /*not a label definition*/
+    return FALSE;/*not a label definition*/
 }
