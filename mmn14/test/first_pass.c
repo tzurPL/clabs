@@ -454,7 +454,7 @@ boolean firstPass(const char *filename, SymbolNode **symbols, CodeNode **codeHea
     }
     currSym = *symbols;
     while (currSym) {
-        if (currSym->isData && !currSym->isExternal) { currSym->value += *IC; }
+        if (currSym->isData && !currSym->isExternal) { currSym->address += *IC; }
         currSym = currSym->next;
     } /*update data symbol addresses*/
     currData = *dataHead;

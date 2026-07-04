@@ -69,7 +69,7 @@ void writeOutput(const char *filename, SymbolNode *symbols, CodeNode *codeHead, 
         if (f) {
             s = symbols;
             while (s) {
-                if (s->isEntry) { fprintf(f, "%s %04d\n", s->name, s->value); }
+                if (s->isEntry) { fprintf(f, "%s %04d\n", s->name, s->address); }
                 s = s->next;
             }          /*write entry symbol details*/
             fclose(f); /*close the file*/

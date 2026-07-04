@@ -85,7 +85,7 @@ void procCodeNode(CodeNode *curr, SymbolNode *symbols, ExtUsage **extUsage, Erro
                          "cannot branch to external label");  /*report error*/
                 *error = TRUE;                                /*set error flag*/
             } else {                                          /*local label*/
-                immed = sym->value - curr->address;           /*calculate offset*/
+                immed = sym->address - curr->address;           /*calculate offset*/
                 if (immed > MAX_IMMED || immed < MIN_IMMED) { /*check offset bounds*/
                     addError(errorList, curr->lineNum, ERR_BRANCH_TOO_FAR,
                              curr->labelDep); /*report error if out of bounds*/
@@ -98,7 +98,7 @@ void procCodeNode(CodeNode *curr, SymbolNode *symbols, ExtUsage **extUsage, Erro
                 curr->inst.j.address = 0;                                  /*clear address bits*/
                 addExtUsage(extUsage, sym->name, curr->address);           /*record external usage*/
             } else {                                                       /*local label*/
-                curr->inst.j.address = sym->value;                         /*encode direct address*/
+                curr->inst.j.address = sym->address;                         /*encode direct address*/
             }
         }
     } else {                                                                      /*symbol not found*/

@@ -11,10 +11,9 @@
 
 /* Symbol Table */
 typedef enum { CODE, DATA, EXTERNAL, ENTRY } Type;
-
 typedef struct SymbolNode {
     char *name;
-    int value;
+    int address;
     boolean isCode;
     boolean isData;
     boolean isExternal;
@@ -25,10 +24,10 @@ typedef struct SymbolNode {
 /*
  * addSymbol func
  * adds a symbol to the symbol table or updates it if it exists.
- * the input is a pointer to the head of the symbol table, the symbol name, its value, and its type type.
+ * the input is a pointer to the head of the symbol table, the symbol name, its address, and its type.
  * returns void.
  */
-void addSymbol(SymbolNode **head, const char *name, int value, Type type);
+void addSymbol(SymbolNode **head, const char *name, int address, Type type);
 
 /*
  * getSymbol func
@@ -40,7 +39,7 @@ SymbolNode *getSymbol(SymbolNode *head, const char *name);
 
 /*
  * freeSymbols func
- * frees the memory allocated for the symbol table list.
+ * frees the memory allocated for the symbol table.
  * the input is the head of the symbol table.
  * returns void.
  */
@@ -63,9 +62,9 @@ void addMacro(MacroNode **head, const char *name, const char *content);
 
 /*
  * getMacroContent func
- * searches for a macro and returns its content.
- * the input is the head of the macro list and the macro name to search for.
- * returns the macro content string if found, or NULL otherwise.
+ * searches for a macro and returns its things.
+ * the input is the head of the macro list and the macro name needed to find.
+ * returns the macro content string if found, or null if not.
  */
 char *getMacroContent(MacroNode *head, const char *name);
 
@@ -73,7 +72,7 @@ char *getMacroContent(MacroNode *head, const char *name);
  * freeMacros func
  * frees the memory allocated for all the macros in the list.
  * the input is the head of the macro list.
- * returns void.
+ * returns void
  */
 void freeMacros(MacroNode *head);
 
