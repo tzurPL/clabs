@@ -2,7 +2,7 @@
  * table.h
  * mmn14
  * Tzur Pinto Lazar
-*/
+ */
 
 #ifndef TABLE_H
 #define TABLE_H

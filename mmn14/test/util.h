@@ -7,10 +7,10 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+#include "errors.h"
+#include "globals.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "globals.h"
-#include "errors.h"
 
 typedef struct {
     char *name;

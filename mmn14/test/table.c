@@ -16,22 +16,28 @@
  */
 void addSymbol(SymbolNode **head, const char *name, int value, Type type) {
     SymbolNode *node = getSymbol(*head, name);
-    if (!node) {/*if symbol doesn't exist, create it*/
+    if (!node) { /*if symbol doesn't exist, create it*/
         node = (SymbolNode *)safeMalloc(sizeof(SymbolNode));
         node->name = strdupp(name);
         node->value = value;
         node->isCode = node->isData = node->isExternal = node->isEntry = FALSE;
         node->next = *head;
-        *head = node;/*add to head of list*/
+        *head = node; /*add to head of list*/
     }
 
     /*update the type of the symbol*/
-    if (type == CODE) node->isCode = TRUE;
-    else if (type == DATA) node->isData = TRUE;
-    else if (type == EXTERNAL) { node->isExternal = TRUE; node->value = 0; }
-    else if (type == ENTRY) node->isEntry = TRUE;
+    if (type == CODE) {
+        node->isCode = TRUE;
+    } else if (type == DATA) {
+        node->isData = TRUE;
+    } else if (type == EXTERNAL) {
+        node->isExternal = TRUE;
+        node->value = 0;
+    } else if (type == ENTRY) {
+        node->isEntry = TRUE;
+    }
 
-    if (type != ENTRY && type != EXTERNAL) node->value = value;/*update value if applicable*/
+    if (type != ENTRY && type != EXTERNAL) { node->value = value; /*update value if applicable*/ }
 }
 
 /*
@@ -41,11 +47,11 @@ void addSymbol(SymbolNode **head, const char *name, int value, Type type) {
  * returns a pointer to the SymbolNode if found or NULL if not.
  */
 SymbolNode *getSymbol(SymbolNode *head, const char *name) {
-    while (head) {/*iterate through the list*/
-        if (strcmp(head->name, name) == 0) return head;/*return node if found*/
-        head = head->next;/*move to next node*/
+    while (head) { /*iterate through the list*/
+        if (strcmp(head->name, name) == 0) { return head; /*return node if found*/ }
+        head = head->next; /*move to next node*/
     }
-    return NULL;/*return null if not found*/
+    return NULL; /*return null if not found*/
 }
 
 /*
@@ -55,11 +61,11 @@ SymbolNode *getSymbol(SymbolNode *head, const char *name) {
  * returns void.
  */
 void freeSymbols(SymbolNode *head) {
-    while (head) {/*iterate through the list*/
+    while (head) { /*iterate through the list*/
         SymbolNode *temp = head;
-        head = head->next;/*move to next node*/
-        free(temp->name);/*free the name string*/
-        free(temp);/*free the node itself*/
+        head = head->next; /*move to next node*/
+        free(temp->name);  /*free the name string*/
+        free(temp);        /*free the node itself*/
     }
 }
 
@@ -70,11 +76,11 @@ void freeSymbols(SymbolNode *head) {
  * returns void.
  */
 void addMacro(MacroNode **head, const char *name, const char *content) {
-    MacroNode *newNode = (MacroNode *)safeMalloc(sizeof(MacroNode));/*allocate memory for new node*/
-    newNode->name = strdupp(name);/*duplicate name*/
-    newNode->content = strdupp(content);/*duplicate content*/
+    MacroNode *newNode = (MacroNode *)safeMalloc(sizeof(MacroNode)); /*allocate memory for new node*/
+    newNode->name = strdupp(name);                                   /*duplicate name*/
+    newNode->content = strdupp(content);                             /*duplicate content*/
     newNode->next = *head;
-    *head = newNode;/*add to head of list*/
+    *head = newNode; /*add to head of list*/
 }
 
 /*
@@ -84,11 +90,11 @@ void addMacro(MacroNode **head, const char *name, const char *content) {
  * returns the macro content string if found, or NULL otherwise.
  */
 char *getMacroContent(MacroNode *head, const char *name) {
-    while (head) {/*iterate through the list*/
-        if (strcmp(head->name, name) == 0) return head->content;/*return content if found*/
-        head = head->next;/*move to next node*/
+    while (head) { /*iterate through the list*/
+        if (strcmp(head->name, name) == 0) { return head->content; /*return content if found*/ }
+        head = head->next; /*move to next node*/
     }
-    return NULL;/*return null if not found*/
+    return NULL; /*return null if not found*/
 }
 
 /*
@@ -98,11 +104,11 @@ char *getMacroContent(MacroNode *head, const char *name) {
  * returns void.
  */
 void freeMacros(MacroNode *head) {
-    while (head) {/*iterate through the list*/
+    while (head) { /*iterate through the list*/
         MacroNode *temp = head;
-        head = head->next;/*move to next node*/
-        free(temp->name);/*free the name string*/
-        free(temp->content);/*free the content string*/
-        free(temp);/*free the node itself*/
+        head = head->next;   /*move to next node*/
+        free(temp->name);    /*free the name string*/
+        free(temp->content); /*free the content string*/
+        free(temp);          /*free the node itself*/
     }
 }

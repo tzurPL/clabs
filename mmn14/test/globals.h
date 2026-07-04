@@ -2,8 +2,7 @@
  * globals.h
  * mmn14
  * Tzur Pinto Lazar
-*/
-
+ */
 
 #ifndef GLOBALS_H
 #define GLOBALS_H
@@ -22,19 +21,45 @@ typedef enum { R_TYPE, I_TYPE, J_TYPE } InstType;
 #define MAX_LABEL_LEN 31
 #define EXTRA_CHARS 2
 
-/* Shifts for instruction fields */
-#define OPCODE_POS 26
-#define RS_POS 21
-#define RT_POS 16
-#define RD_POS 11
-#define FUNCT_POS 6
-#define REGBIT_POS 25
+/* Instruction bitfields */
+typedef struct {
+    unsigned int unused : 6;
+    unsigned int funct : 5;
+    unsigned int rd : 5;
+    unsigned int rt : 5;
+    unsigned int rs : 5;
+    unsigned int opcode : 6;
+} RType;
 
-/* Bit sizes for masking */
-#define OPCODE_SIZE 6
-#define IMMED_SIZE 16
-#define ADDR_SIZE 25
-#define BYTE_SIZE 8
+typedef struct {
+    signed int immed : 16;
+    unsigned int rt : 5;
+    unsigned int rs : 5;
+    unsigned int opcode : 6;
+} IType;
+
+typedef struct {
+    unsigned int address : 25;
+    unsigned int reg : 1;
+    unsigned int opcode : 6;
+} JType;
+
+typedef union {
+    RType r;
+    IType i;
+    JType j;
+    unsigned int word;
+} Instruction;
+
+typedef union {
+    struct {
+        unsigned int b0 : 8;
+        unsigned int b1 : 8;
+        unsigned int b2 : 8;
+        unsigned int b3 : 8;
+    } bytes;
+    unsigned int word;
+} WordBytes;
 
 /* Immediate bounds */
 #define MAX_IMMED 32767
@@ -42,9 +67,6 @@ typedef enum { R_TYPE, I_TYPE, J_TYPE } InstType;
 
 /* Bytes and words */
 #define NUM_BYTES_WORD 4
-#define BYTE1 8
-#define BYTE2 16
-#define BYTE3 24
 
 /* Opcode ranges based on instruction groups */
 #define MIN_ARITH_OPCODE 10
@@ -69,7 +91,6 @@ typedef enum { R_TYPE, I_TYPE, J_TYPE } InstType;
 #define FUNCT_MVHI 2
 #define FUNCT_MVLO 3
 
-#define BASE_10 10
 #define MIN_ARGS 2
 
 #endif
