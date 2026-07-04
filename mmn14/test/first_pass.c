@@ -388,6 +388,7 @@ boolean procInstruction(char *token, char **ptr, char *label, int lineNum, Symbo
         } else if (op->type == J_TYPE) {
             procJType(ptr, op, lineNum, codeHead, IC, errorList, &lineError, inst);
         }
+        free(op); /*free dynamically allocated opcode*/
     } else {                                                      /*invalid instruction*/
         addError(errorList, lineNum, ERR_UNKNOWN_COMMAND, token); /*report unknown command*/
         lineError = TRUE;                                         /*set error flag*/

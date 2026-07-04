@@ -8,13 +8,7 @@
 #include <ctype.h>
 #include <string.h>
 
-Opcode opcodes[] = {{"add", 0, 1, R_TYPE},   {"sub", 0, 2, R_TYPE},   {"and", 0, 3, R_TYPE},   {"or", 0, 4, R_TYPE},
-                    {"nor", 0, 5, R_TYPE},   {"move", 1, 1, R_TYPE},  {"mvhi", 1, 2, R_TYPE},  {"mvlo", 1, 3, R_TYPE},
-                    {"addi", 10, 0, I_TYPE}, {"subi", 11, 0, I_TYPE}, {"andi", 12, 0, I_TYPE}, {"ori", 13, 0, I_TYPE},
-                    {"nori", 14, 0, I_TYPE}, {"bne", 15, 0, I_TYPE},  {"beq", 16, 0, I_TYPE},  {"blt", 17, 0, I_TYPE},
-                    {"bgt", 18, 0, I_TYPE},  {"lb", 19, 0, I_TYPE},   {"sb", 20, 0, I_TYPE},   {"lw", 21, 0, I_TYPE},
-                    {"sw", 22, 0, I_TYPE},   {"lh", 23, 0, I_TYPE},   {"sh", 24, 0, I_TYPE},   {"jmp", 30, 0, J_TYPE},
-                    {"la", 31, 0, J_TYPE},   {"call", 32, 0, J_TYPE}, {"stop", 63, 0, J_TYPE}, {"hlt", 63, 0, J_TYPE}};
+
 
 /*
  * getOpcode func
@@ -23,9 +17,22 @@ Opcode opcodes[] = {{"add", 0, 1, R_TYPE},   {"sub", 0, 2, R_TYPE},   {"and", 0,
  * returns a pointer to the Opcode struct if found, or NULL otherwise.
  */
 Opcode *getOpcode(const char *name) {
+    Opcode opcodes[] = {
+        {"add", 0, 1, R_TYPE},   {"sub", 0, 2, R_TYPE},   {"and", 0, 3, R_TYPE},   {"or", 0, 4, R_TYPE},
+        {"nor", 0, 5, R_TYPE},   {"move", 1, 1, R_TYPE},  {"mvhi", 1, 2, R_TYPE},  {"mvlo", 1, 3, R_TYPE},
+        {"addi", 10, 0, I_TYPE}, {"subi", 11, 0, I_TYPE}, {"andi", 12, 0, I_TYPE}, {"ori", 13, 0, I_TYPE},
+        {"nori", 14, 0, I_TYPE}, {"bne", 15, 0, I_TYPE},  {"beq", 16, 0, I_TYPE},  {"blt", 17, 0, I_TYPE},
+        {"bgt", 18, 0, I_TYPE},  {"lb", 19, 0, I_TYPE},   {"sb", 20, 0, I_TYPE},   {"lw", 21, 0, I_TYPE},
+        {"sw", 22, 0, I_TYPE},   {"lh", 23, 0, I_TYPE},   {"sh", 24, 0, I_TYPE},   {"jmp", 30, 0, J_TYPE},
+        {"la", 31, 0, J_TYPE},   {"call", 32, 0, J_TYPE}, {"stop", 63, 0, J_TYPE}, {"hlt", 63, 0, J_TYPE}
+    };
     int i;
     for (i = 0; i < (int)(sizeof(opcodes) / sizeof(Opcode)); i++) { /*iterate through opcode table*/
-        if (strcmp(opcodes[i].name, name) == 0) { return &opcodes[i]; /*return opcode if matches*/ }
+        if (strcmp(opcodes[i].name, name) == 0) {
+            Opcode *ret = (Opcode *)safeMalloc(sizeof(Opcode));
+            *ret = opcodes[i];
+            return ret; /*return dynamically allocated opcode if matches*/
+        }
     }
     return NULL; /*return null if not found*/
 }
@@ -37,7 +44,11 @@ Opcode *getOpcode(const char *name) {
  * returns TRUE if it is a reserved keyword, FALSE otherwise.
  */
 boolean isReservedKeyword(const char *name) {
-    if (getOpcode(name)) { return TRUE; /*if name is an opcode, it's reserved*/ }
+    Opcode *op = getOpcode(name);
+    if (op) {
+        free(op);
+        return TRUE; /*if name is an opcode, it's reserved*/
+    }
     /*check against all directive and macro keywords*/
     if (strcmp(name, "db") == 0 || strcmp(name, "dh") == 0 || strcmp(name, "dw") == 0 || strcmp(name, "asciz") == 0 ||
         strcmp(name, "entry") == 0 || strcmp(name, "extern") == 0 || strcmp(name, "mcro") == 0 ||
