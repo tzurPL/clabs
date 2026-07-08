@@ -56,7 +56,7 @@ int checkMacroDef(const char *token, char **ptr, char *macroName, const char *fi
             }
             return 1;
         }
-        printError(filename, lineNum, ERR_EXTRA_TEXT, "Missing macro name");/*report missing name*/
+        printError(filename, lineNum, ERR_MISSING_OPERAND, "Missing macro name");/*report missing name*/
         return -1;
     }
     return 0;/*not a macro*/

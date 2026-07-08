@@ -120,6 +120,14 @@ void printError(const char *filename, int lineNum, ErrorType type, const char *e
         fprintf(stdout, "Multiple consecutive commas");
     } else if (type == ERR_EXTRA_TEXT) {
         fprintf(stdout, "extra text after command");
+    } else if (type == ERR_MISSING_OPERAND) {
+        fprintf(stdout, "missing operand");
+    } else if (type == ERR_MISSING_QUOTE) {
+        fprintf(stdout, "Missing closing quote for string");
+    } else if (type == ERR_MISSING_STRING) {
+        fprintf(stdout, "Missing string operand");
+    } else if (type == ERR_INVALID_OPERAND_TYPE) {
+        fprintf(stdout, "Invalid operand type");
     } else if (type == ERR_ENTRY_NOT_FOUND) {
         fprintf(stdout, "Entry symbol was not defined");
     } else if (type == ERR_BRANCH_TOO_FAR) {

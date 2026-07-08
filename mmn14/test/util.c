@@ -226,15 +226,15 @@ boolean matchComma(char **ptr, ErrorNode **errorList, int lineNum) {
 
 /*
  * checkRegOperand func
- * extracts a register operand from the string and validates it.
- * the input is a pointer to the string pointer, error list, and line number.
- * returns the valid register number, or -1 if invalid or missing.
+ * extracts a register op from the string and checks it
+ * the input is a pointer to the string pointer, error list, and line num
+ * returns the valid register num or -1 if not valid or missing.
  */
 int checkRegOperand(char **ptr, ErrorNode **errorList, int lineNum) {
     int reg;
     char *t = getToken(ptr);/*get the next token*/
     if (!t) {
-        addError(errorList, lineNum, ERR_EXTRA_TEXT, "missing operand");
+        addError(errorList, lineNum, ERR_MISSING_OPERAND, NULL);
         return -1;
     }/*report missing operand*/
     reg = getRegNum(t);/*extract register number*/
@@ -245,7 +245,7 @@ int checkRegOperand(char **ptr, ErrorNode **errorList, int lineNum) {
 
 /*
  * checkImmedOperand func
- * extracts an immediate value operand from the string.
+ * extracts an immed value from the string
  * the input is a pointer to the string pointer, error list, line number, and error flag.
  * returns the immediate value, or 0 if missing (sets error flag).
  */
@@ -253,7 +253,7 @@ short checkImmedOperand(char **ptr, ErrorNode **errorList, int lineNum, boolean 
     long val;
     char *t = getToken(ptr);/*get the next token*/
     if (!t) {
-        addError(errorList, lineNum, ERR_EXTRA_TEXT, "missing operand");
+        addError(errorList, lineNum, ERR_MISSING_OPERAND, NULL);
         *lineError = TRUE;
         return 0;
     }/*report missing operand*/
@@ -275,7 +275,7 @@ short checkImmedOperand(char **ptr, ErrorNode **errorList, int lineNum, boolean 
 char *checkLabelOperand(char **ptr, ErrorNode **errorList, int lineNum, boolean *lineError) {
     char *t = getToken(ptr);/*get the next token*/
     if (!t) {
-        addError(errorList, lineNum, ERR_EXTRA_TEXT, "missing operand");
+        addError(errorList, lineNum, ERR_MISSING_OPERAND, NULL);
         *lineError = TRUE;
         return NULL;
     }/*report missing operand*/

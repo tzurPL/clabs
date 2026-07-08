@@ -164,11 +164,11 @@ void procAsciz(char **ptr, DataNode **dataHead, int *DC, ErrorNode **errorList, 
             addDataNode(dataHead, '\0', (*DC)++);
         }/*null-terminate the string*/
         else {
-            addError(errorList, lineNum, ERR_EXTRA_TEXT, "missing closing quote");
+            addError(errorList, lineNum, ERR_MISSING_QUOTE, NULL);
             *lineError = TRUE;
         }/*report missing quote*/
     } else {
-        addError(errorList, lineNum, ERR_EXTRA_TEXT, "missing string");
+        addError(errorList, lineNum, ERR_MISSING_STRING, NULL);
         *lineError = TRUE;
     }/*report missing string*/
     checkExtraText(ptr, errorList, lineNum, lineError);/*check for extra text*/
@@ -193,7 +193,7 @@ void procExt(char **ptr, SymbolNode **symbols, ErrorNode **errorList, int lineNu
         }
         free(ext);/*free the token*/
     } else {
-        addError(errorList, lineNum, ERR_EXTRA_TEXT, "missing extern name");
+        addError(errorList, lineNum, ERR_MISSING_OPERAND, "missing extern name");
         *lineError = TRUE;
     }/*report missing name*/
     checkExtraText(ptr, errorList, lineNum, lineError);/*check for extra text*/
@@ -328,7 +328,7 @@ void procJType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int *IC
         if (t) {/*if operand exists*/
             if (t[0] == '$') {/*check if operand is a register*/
                 if (op->opcode == LA_OPCODE || op->opcode == CALL_OPCODE) {
-                    addError(errorList, lineNum, ERR_INVALID_IMMED, "la/call takes a label");
+                    addError(errorList, lineNum, ERR_INVALID_OPERAND_TYPE, "la/call takes a label");
                     *lineError = TRUE;
                 }/*validate operand type*/
                 else {
@@ -341,7 +341,7 @@ void procJType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int *IC
                 }/*extract register*/
             } else {/*operand is a label*/
                 if (t[0] >= '0' && t[0] <= '9') {
-                    addError(errorList, lineNum, ERR_INVALID_IMMED, "J-type takes label or register");
+                    addError(errorList, lineNum, ERR_INVALID_OPERAND_TYPE, "J-type takes label or register");
                     *lineError = TRUE;
                 }/*validate operand type*/
                 else {
@@ -350,8 +350,8 @@ void procJType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int *IC
                 }/*record label dependency*/
             }
             free(t);/*free the token*/
-        } else {
-            addError(errorList, lineNum, ERR_EXTRA_TEXT, "missing operand");
+        } else {/*if operand is missing*/
+            addError(errorList, lineNum, ERR_MISSING_OPERAND, NULL);
             *lineError = TRUE;
         }/*report missing operand*/
     }
