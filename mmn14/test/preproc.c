@@ -12,7 +12,7 @@
 
 /*
  * checkLabel func
- * checks if the first token is a label, if yes saves it, sets the hasLabel flag and gets the next token.
+ * checks if the first token is a label if yes saves it, sets the hasLabel flag and gets the next token.
  * the input is a pointer to the token string pointer,a pointer to store the label,a pointer to the input string
  * pointer,and a boolean flag. returns 1 if a label was found 0 if not.
  */
@@ -164,7 +164,6 @@ boolean preprocess(const char *filename, MacroNode **outMacros) {
     output[0] = '\0';
 
     strcpy(asName, filename);
-    strcat(asName, ".as");/*append .as extension*/
     strcpy(amName, filename);
     strcat(amName, ".am");/*append .am extension*/
 

@@ -119,7 +119,7 @@ void printError(const char *filename, int lineNum, ErrorType type, const char *e
     } else if (type == ERR_MULTIPLE_COMMAS) {
         fprintf(stdout, "Multiple consecutive commas");
     } else if (type == ERR_EXTRA_TEXT) {
-        fprintf(stdout, "Extraneous text after command");
+        fprintf(stdout, "extra text after command");
     } else if (type == ERR_ENTRY_NOT_FOUND) {
         fprintf(stdout, "Entry symbol was not defined");
     } else if (type == ERR_BRANCH_TOO_FAR) {

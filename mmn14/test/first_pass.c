@@ -64,7 +64,7 @@ boolean checkData(char **ptr, DataNode **dataHead, int *DC, int size, const char
                   ErrorNode **errorList) {
     char *t;
     long val;
-    boolean err = FALSE;/* C90 requires declaration at top */
+    boolean err = FALSE;
     boolean loopflag = FALSE;
 
     skipSpaces(ptr);
@@ -257,7 +257,7 @@ void procRType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int *IC
             if (rd == -1) { *lineError = TRUE; }
         }/*extract rd directly after rs*/
     }
-    if (!*lineError) { checkExtraText(ptr, errorList, lineNum, lineError);/*check for extraneous text*/ }
+    if (!*lineError) { checkExtraText(ptr, errorList, lineNum, lineError);/*check for extra text*/ }
     if (!*lineError) {
         inst.r.rs = rs;
         inst.r.rt = rt;
@@ -302,7 +302,7 @@ void procIType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int *IC
             labDep = checkLabelOperand(ptr, errorList, lineNum, lineError);/*extract label dependency*/
         }
     }
-    if (!*lineError) { checkExtraText(ptr, errorList, lineNum, lineError);/*check for extraneous text*/ }
+    if (!*lineError) { checkExtraText(ptr, errorList, lineNum, lineError);/*check for extra text*/ }
     if (!*lineError) {
         inst.i.rs = rs;
         inst.i.rt = rt;
@@ -355,7 +355,7 @@ void procJType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int *IC
             *lineError = TRUE;
         }/*report missing operand*/
     }
-    if (!*lineError) { checkExtraText(ptr, errorList, lineNum, lineError);/*check for extraneous text*/ }
+    if (!*lineError) { checkExtraText(ptr, errorList, lineNum, lineError);/*check for extra text*/ }
     if (!*lineError) {
         inst.j.reg = regBit;
         inst.j.address = addr;

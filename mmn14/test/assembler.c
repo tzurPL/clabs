@@ -133,7 +133,7 @@ void processFile(const char *filename) {
     ErrorNode *errorList = NULL;/*initialize error list*/
     MacroNode *macros = NULL;/*initialize macro list*/
     int IC = IC_INIT, DC = 0;/*initialize counters*/
-    boolean pass1Ok, pass2Ok;
+    boolean pass1,pass2;
 
     printf("Processing %s...\n", filename);
 
@@ -142,10 +142,10 @@ void processFile(const char *filename) {
         return;/*stop if preprocessing fails*/
     }
 
-    pass1Ok = firstPass(filename, &symbols, &codeHead, &dataHead, &IC, &DC, &errorList, macros);/*run first pass*/
-    pass2Ok = secondPass(filename, symbols, codeHead, &extUsage, &errorList);/*run second pass*/
+    pass1 = firstPass(filename, &symbols, &codeHead, &dataHead, &IC, &DC, &errorList, macros);/*run first pass*/
+    pass2 = secondPass(filename, symbols, codeHead, &extUsage, &errorList);/*run second pass*/
 
-    if (pass1Ok && pass2Ok) {/*if both passes succeeded*/
+    if (pass1 && pass2) {/*if both passes succeeded*/
         writeOutput(filename, symbols, codeHead, dataHead, extUsage, IC, DC);/*generate output files*/
         printf("Successfully assembled %s\n", filename);
     } else {

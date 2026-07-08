@@ -12,26 +12,26 @@
 
 /*
  * getOpcode func
- * retrieves the opcode details for a given instruction name.
+ * gets the opcode details for a given instruction.
  * the input is the name of the instruction.
- * returns a pointer to the Opcode struct if found, or NULL otherwise.
+ * returns a pointer to the Opcode struct if found or NULL if not.
  */
 Opcode *getOpcode(const char *name) {
     Opcode opcodes[] = {
-        {"add", 0, 1, R_TYPE},   {"sub", 0, 2, R_TYPE},   {"and", 0, 3, R_TYPE},   {"or", 0, 4, R_TYPE},
-        {"nor", 0, 5, R_TYPE},   {"move", 1, 1, R_TYPE},  {"mvhi", 1, 2, R_TYPE},  {"mvlo", 1, 3, R_TYPE},
-        {"addi", 10, 0, I_TYPE}, {"subi", 11, 0, I_TYPE}, {"andi", 12, 0, I_TYPE}, {"ori", 13, 0, I_TYPE},
-        {"nori", 14, 0, I_TYPE}, {"bne", 15, 0, I_TYPE},  {"beq", 16, 0, I_TYPE},  {"blt", 17, 0, I_TYPE},
-        {"bgt", 18, 0, I_TYPE},  {"lb", 19, 0, I_TYPE},   {"sb", 20, 0, I_TYPE},   {"lw", 21, 0, I_TYPE},
-        {"sw", 22, 0, I_TYPE},   {"lh", 23, 0, I_TYPE},   {"sh", 24, 0, I_TYPE},   {"jmp", 30, 0, J_TYPE},
-        {"la", 31, 0, J_TYPE},   {"call", 32, 0, J_TYPE}, {"stop", 63, 0, J_TYPE}, {"hlt", 63, 0, J_TYPE}
-    };
+        {"add", 0, 1, R_TYPE},{"sub", 0, 2, R_TYPE},{"and", 0, 3, R_TYPE},{"or", 0, 4, R_TYPE},
+        {"nor", 0, 5, R_TYPE},{"move", 1, 1, R_TYPE},{"mvhi", 1, 2, R_TYPE},{"mvlo", 1, 3, R_TYPE},
+        {"addi", 10, 0, I_TYPE},{"subi", 11, 0, I_TYPE},{"andi", 12, 0, I_TYPE},{"ori", 13, 0, I_TYPE},
+        {"nori", 14, 0, I_TYPE},{"bne", 15, 0, I_TYPE},{"beq", 16, 0, I_TYPE},{"blt", 17, 0, I_TYPE},
+        {"bgt", 18, 0, I_TYPE},{"lb", 19, 0, I_TYPE},{"sb", 20, 0, I_TYPE},{"lw", 21, 0, I_TYPE},
+        {"sw", 22, 0, I_TYPE},{"lh", 23, 0, I_TYPE},{"sh", 24, 0, I_TYPE},{"jmp", 30, 0, J_TYPE},
+        {"la", 31, 0, J_TYPE},{"call", 32, 0, J_TYPE},{"stop", 63, 0, J_TYPE},{"hlt", 63, 0, J_TYPE}};
     int i;
-    for (i = 0; i < (int)(sizeof(opcodes) / sizeof(Opcode)); i++) {
-        if (strcmp(opcodes[i].name, name) == 0) {
-            Opcode *ret = (Opcode *)safeMalloc(sizeof(Opcode));
-            *ret = opcodes[i];
-            return ret;
+
+    for (i = 0; i < (int)(sizeof(opcodes) / sizeof(Opcode)); i++) {/*go over the opcode table*/
+        if (strcmp(opcodes[i].name, name) == 0) {/*if the name in the table is the needed name*/
+            Opcode *res = (Opcode *)safeMalloc(sizeof(Opcode));
+            *res = opcodes[i];
+            return res;
         }
     }
     return NULL;
@@ -39,17 +39,17 @@ Opcode *getOpcode(const char *name) {
 
 /*
  * isReservedKeyword func
- * checks if a given name is a reserved keyword in the assembler.
+ * checks if a name is a reserved keyword
  * the input is the name to check.
- * returns TRUE if it is a reserved keyword, FALSE otherwise.
+ * returns true if it is a reserved keyword false if not.
  */
 boolean isReservedKeyword(const char *name) {
-    Opcode *op = getOpcode(name);
-    if (op) {
+    Opcode *op = getOpcode(name);/*get the opcode*/
+    if (op) {/*if found*/
         free(op);
-        return TRUE;/*if name is an opcode, it's reserved*/
+        return TRUE;/*if name is an opcode it's reserved*/
     }
-    /*check against all directive and macro keywords*/
+    /*check all directive and macro reserved words*/
     if (strcmp(name, "db") == 0 || strcmp(name, "dh") == 0 || strcmp(name, "dw") == 0 || strcmp(name, "asciz") == 0 ||
         strcmp(name, "entry") == 0 || strcmp(name, "extern") == 0 || strcmp(name, "mcro") == 0 ||
         strcmp(name, "mcroend") == 0) {
@@ -60,17 +60,18 @@ boolean isReservedKeyword(const char *name) {
 
 /*
  * checkLabelN func
- * checks if a given string follows the valid format for a label.
- * the input is the name of the label.
- * returns TRUE if the format is valid, FALSE otherwise.
+ * checks if a name follows the valid format for label
+ * the input is the name of the label
+ * returns true if the format is valid false if not.
  */
 boolean checkLabelN(const char *name) {
     int i = 0;
     if (!name || name[0] == '\0') { return FALSE;/*check for empty string*/ }
-    if (!isalpha((unsigned char)name[0])) { return FALSE;/*check if first character is alphabetic*/ }
-    for (i = 1; name[i]; i++) {/*iterate through characters*/
+    if (!isalpha((unsigned char)name[0])) { return FALSE;/*check if first character is in the alphabet*/ }
+
+    for (i = 1; name[i]; i++) {/*go through characters*/
         if (!isalnum((unsigned char)name[i]) && name[i] != '_') {
-            return FALSE;/*check for alphanumeric or underscore*/
+            return FALSE;/*check for number or letter or _*/
         }
     }
     return TRUE;
@@ -78,68 +79,68 @@ boolean checkLabelN(const char *name) {
 
 /*
  * safeMalloc func
- * allocates memory safely and exits the program if allocation fails.
- * the input is the size of memory to allocate.
- * returns a pointer to the allocated memory.
+ * allocates memory in a good way and exits the program if failed.
+ * the input is the size of memory to allocate
+ * returns a pointer to the allocated memory
  */
 void *safeMalloc(size_t size) {
-    void *ptr = malloc(size);/*attempt allocation*/
-    if (!ptr) {
+    void *ptr = malloc(size);/*try to allocate*/
+    if (!ptr) {/*if failed*/
         printError(NULL, 0, ERR_ALLOC_FAIL, NULL);
         exit(1);
     }/*print error and exit if failed*/
-    return ptr;/*return successful allocation*/
+    return ptr;/*return allocated*/
 }
 
 /*
  * safeRealloc func
- * reallocates memory safely and exits the program if reallocation fails.
- * the input is a pointer to the previously allocated memory and the new size.
- * returns a pointer to the newly allocated memory.
+ * reallocates memory and exits the program if failed.
+ * the input is a pointer to the old allocated memory and the new size
+ * returns a pointer to the new allocated space
  */
 void *safeRealloc(void *ptr, size_t size) {
-    void *newPtr = realloc(ptr, size);/*attempt reallocation*/
+    void *newPtr = realloc(ptr, size);/*try to realloc*/
     if (!newPtr && size > 0) {
         printError(NULL, 0, ERR_ALLOC_FAIL, NULL);
         exit(1);
     }/*print error and exit if failed*/
-    return newPtr;/*return successful reallocation*/
+    return newPtr;/*return the new pointer with allocated memory*/
 }
 
 /*
  * strdupp func
- * duplicates a string safely by allocating memory and copying the content.
- * the input is the string to duplicate.
- * returns a pointer to the newly allocated duplicated string.
+ * duplicates a string by allocating memory and copying it.
+ * the input is the string
+ * returns a pointer to the new duplicated string
  */
 char *strdupp(const char *s) {
     char *d;
-    if (!s) { return NULL;/*check for null input*/ }
-    d = (char *)safeMalloc(strlen(s) + 1);/*allocate memory for string + null terminator*/
-    strcpy(d, s);/*copy string content*/
+    if (!s){return NULL;}/*check for null input*/
+    d = (char *)safeMalloc(strlen(s) + 1);/*allocate memory for string and its \0*/
+    strcpy(d, s);/*copy string*/
     return d;/*return duplicated string*/
 }
 
 /*
  * skipSpaces func
- * advances a string pointer past any leading whitespace characters.
+ * move a pointer over a string and skip spaces.
  * the input is a pointer to the string pointer.
  * returns void.
  */
 void skipSpaces(char **str) {
-    while (**str != '\0' && isspace((unsigned char)**str)) {/*advance past whitespace*/
+    while (**str != '\0' && isspace((unsigned char)**str)) {/*skip whitespace*/
         (*str)++;
     }
 }
 
 /*
  * isEmptyLine func
- * checks if a line consists entirely of whitespace characters.
- * the input is the string to check.
- * returns TRUE if the line is empty or only whitespace, FALSE otherwise.
+ * checks if a line has only whitespaces.
+ * the input is a string pointer
+ * returns true if the line is empty false if not
  */
 boolean isEmptyLine(const char *str) {
-    while (*str) {/*iterate through characters*/
+    while (*str) {/*go through characters*/
         if (!isspace((unsigned char)*str)) { return FALSE;/*if non-space found, not empty*/ }
         str++;/*move to next character*/
     }
@@ -148,76 +149,78 @@ boolean isEmptyLine(const char *str) {
 
 /*
  * isCommentLine func
- * checks if a line is a comment, indicated by a leading semicolon.
- * the input is the string to check.
- * returns TRUE if the line is a comment, FALSE otherwise.
+ * checks if a line is a comment by checking if it starts with ;
+ * the input is a string pointer
+ * returns true if the line is a comment flase if not
  */
 boolean isCommentLine(const char *str) {
     const char *p = str;
-    while (*p && isspace((unsigned char)*p)) {
-        p++;/*skip leading spaces*/
-    }
-    return (*p == ';');/*check if first non-space character is semicolon*/
+    while (*p && isspace((unsigned char)*p)) {p++;}/*skip spaces*/
+
+    return (*p == ';');/*check if first non space character is ;*/
 }
 
 /*
  * getToken func
- * extracts the next token from a string, separated by whitespace or commas.
- * the input is a pointer to the string pointer.
- * returns a newly allocated string containing the token, or NULL if no token is found.
+ * extracts the next token from a string separated by whitespace or ,
+ * the input is a pointer to the string pointer
+ * returns a new string with the token or null if it didnt find a token
  */
 char *getToken(char **str) {
     char *start, *token;
     int len = 0;
-    skipSpaces(str);/*skip leading spaces*/
-    if (**str == '\0' || **str == ';') { return NULL;/*return null if end of string or comment*/ }
 
-    start = *str;
-    while (**str && !isspace((unsigned char)**str) && **str != ',' && **str != ';') {/*count token length*/
+    skipSpaces(str);/*skip spaces*/
+    /*return null if end of string or comment*/
+    if (**str == '\0' || **str == ';') { return NULL; }
+
+    start = *str;/*start of the token*/
+    while (**str && !isspace((unsigned char)**str) && **str != ',' && **str != ';') {/*count token len*/
         (*str)++;
         len++;
     }
 
-    if (len == 0) { return NULL;/*return null if empty*/ }
-    token = (char *)safeMalloc(len + 1);/*allocate memory for token*/
-    strncpy(token, start, len);/*copy token characters*/
-    token[len] = '\0';/*null-terminate string*/
+    if (len == 0){ return NULL; }/*return null if empty*/
+    token = (char *)safeMalloc(len + 1);/*allocate memory token*/
+    strncpy(token, start, len);/*copy chars to token*/
+    token[len] = '\0';/*add end*/
     return token;
 }
 
 /*
  * getRegNum func
- * extracts the register number from a register token string.
- * the input is the register token string (e.g. "$4").
- * returns the register number if valid, or -1 otherwise.
+ * extracts the register num from a string
+ * the input is the register token string
+ * returns the register number if valid or -1 if not
  */
 int getRegNum(const char *token) {
-    if (token && token[0] == '$') {/*check for register prefix*/
+    if (token && token[0] == '$') {/*check for register mark*/
         int num;
         char *endptr;
         const char *p = token + 1;
-        if (!*p) { return -1; }
-        num = (int)strtol(p, &endptr, 10);/*convert remaining string to integer*/
-        if (*endptr != '\0') { return -1;/*check for invalid characters*/ }
-        if (num >= 0 && num < REG_COUNT) { return num;/*check if register is within bounds*/ }
+
+        if (!*p){return -1;}/*if not exist */
+        num = (int)strtol(p,&endptr,10);/*convert string to int*/
+        if (*endptr != '\0') { return -1;}/*check if there invalid chars*/
+        /*check if register is valid num for register*/
+        if (num >= 0 && num < REG_COUNT){return num;}
     }
-    return -1;/*return -1 if invalid*/
+    return -1;/*return -1 if not good*/
 }
 
-/* Bulletproof parsing helpers */
 /*
  * matchComma func
- * checks for and consumes a comma in the string, reporting an error if missing.
- * the input is a pointer to the string pointer, error list, and line number.
- * returns TRUE if a comma was found, FALSE otherwise.
+ * checks for comma in string and gives out error if missing.
+ * the input is a pointer to the string pointer, error list, and line number
+ * returns true if comma found false if not
  */
 boolean matchComma(char **ptr, ErrorNode **errorList, int lineNum) {
-    skipSpaces(ptr);/*skip leading spaces*/
+    skipSpaces(ptr);/*skip spaces*/
     if (**ptr == ',') {/*check for comma*/
-        (*ptr)++;/*move past comma*/
+        (*ptr)++;/*move after comma*/
         return TRUE;/*comma found*/
     }
-    addError(errorList, lineNum, ERR_MISSING_COMMA, NULL);/*report missing comma error*/
+    addError(errorList, lineNum, ERR_MISSING_COMMA, NULL);/*save missing comma error*/
     return FALSE;/*comma not found*/
 }
 
@@ -277,7 +280,7 @@ char *checkLabelOperand(char **ptr, ErrorNode **errorList, int lineNum, boolean 
 
 /*
  * checkExtraText func
- * checks if there is any extraneous text remaining in the string and reports an error if so.
+ * checks if there is any extra text remaining in the string and reports an error if so.
  * the input is a pointer to the string pointer, error list, line number, and error flag.
  * returns void.
  */
@@ -294,7 +297,7 @@ void checkExtraText(char **ptr, ErrorNode **errorList, int lineNum, boolean *lin
  * checkLineLen func
  * checks if the length of a line is within the allowed limit (max 80 chars).
  * the input is the string line to check.
- * returns TRUE if the length is valid, FALSE otherwise.
+ * returns TRUE if the length is valid, FALSE if not.
  */
 boolean checkLineLen(const char *line) {
     int len = strlen(line);/*get initial length*/
@@ -307,7 +310,7 @@ boolean checkLineLen(const char *line) {
  * isLabelDef func
  * checks if a token string ends with a colon, indicating it is a label definition.
  * the input is the token string to check.
- * returns TRUE if it is a label definition, FALSE otherwise.
+ * returns TRUE if it is a label definition, FALSE if not.
  */
 boolean isLabelDef(const char *token) {
     if (token && token[0] != '\0' && token[strlen(token) - 1] == ':') {/*check if token ends with colon*/

@@ -141,7 +141,7 @@ char *checkLabelOperand(char **ptr, ErrorNode **errorList, int lineNum, boolean 
 
 /*
  * checkExtraText func
- * checks if there is any extraneous text remaining in the string and reports an error if so.
+ * checks if there is any extra text remaining in the string and reports an error if so.
  * the input is a pointer to the string pointer, error list, line number, and error flag.
  * returns void.
  */
