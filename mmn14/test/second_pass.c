@@ -124,6 +124,7 @@ boolean secondPass(const char *filename, SymbolNode *symbols, CodeNode *codeHead
     int lineNum = 0;
 
     strcpy(amName, filename);
+    stripAsExtension(amName);/*strip .as extension if present*/
     strcat(amName, ".am");/*append .am extension*/
     fp = fopen(amName, "r");/*open the file for reading*/
     if (!fp) { return FALSE; }

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Clean previous tester files and any .o files
-rm -f test*.as test*.am test*.ob test*.ent test*.ext *.o test*.out
+# rm -f test*.as test*.am test*.ob test*.ent test*.ext *.o test*.out
 
 echo "========================================"
 echo "Compiling the project..."
@@ -239,7 +239,7 @@ run_test() {
     local expect_success=$2
 
     echo -n "Testing ${test_name}.as... "
-    ./assembler "${test_name}" >"${test_name}.out" 2>&1
+    ./assembler "${test_name}.as" >"${test_name}.out" 2>&1
 
     local ob_exists=0
     if [ -f "${test_name}.ob" ]; then
@@ -308,7 +308,7 @@ echo "========================================"
 # Clean up any leftover outputs first to ensure clean test
 rm -f test01_basic.ob test02_imm.ob test11_err_syntax.ob
 
-./assembler test01_basic test11_err_syntax test02_imm >batch_test.out 2>&1
+./assembler test01_basic.as test11_err_syntax.as test02_imm.as >batch_test.out 2>&1
 
 BATCH_FAILED=0
 if [ ! -f "test01_basic.ob" ]; then
@@ -341,7 +341,7 @@ echo ""
 echo "========================================"
 echo "Cleaning up tester's junk..."
 echo "========================================"
-rm -f test*.as test*.am test*.ob test*.ent test*.ext test*.out batch_test.out
+rm -f test*.as test*.am test*.ob test*.ent test*.ext test*.out batch_test.out *.o
 # Uncomment the next line if you want to automatically clean .o files too
 # rm -f *.o
 

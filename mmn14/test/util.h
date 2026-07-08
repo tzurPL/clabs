@@ -163,4 +163,12 @@ boolean checkLineLen(const char *line);
  */
 boolean isLabelDef(const char *token);
 
+/*
+ * stripAsExtension func
+ * strips the .as extension from a filename if it exists.
+ * the input is the string to strip the extension from.
+ * returns void.
+ */
+void stripAsExtension(char *filename);
+
 #endif

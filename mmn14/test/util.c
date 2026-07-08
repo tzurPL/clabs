@@ -250,16 +250,20 @@ int checkRegOperand(char **ptr, ErrorNode **errorList, int lineNum) {
  * returns the immediate value, or 0 if missing (sets error flag).
  */
 short checkImmedOperand(char **ptr, ErrorNode **errorList, int lineNum, boolean *lineError) {
-    short val;
+    long val;
     char *t = getToken(ptr);/*get the next token*/
     if (!t) {
         addError(errorList, lineNum, ERR_EXTRA_TEXT, "missing operand");
         *lineError = TRUE;
         return 0;
     }/*report missing operand*/
-    val = (short)atoi(t);/*convert token to short integer*/
+    val = atol(t);/*convert token to long integer*/
+    if (val < MIN_IMMED || val > MAX_IMMED) {/*check bounds*/
+        addError(errorList, lineNum, ERR_INVALID_IMMED, t);/*report out of bounds*/
+        *lineError = TRUE;/*set error flag*/
+    }
     free(t);/*free the token*/
-    return val;/*return immediate value*/
+    return (short)val;/*return immediate value*/
 }
 
 /*
@@ -317,4 +321,19 @@ boolean isLabelDef(const char *token) {
         return TRUE;/*is label definition*/
     }
     return FALSE;/*not a label definition*/
+}
+
+/*
+ * stripAsExtension func
+ * strips the .as extension from a filename if it exists.
+ * the input is the string to strip the extension from.
+ * returns void.
+ */
+void stripAsExtension(char *filename) {
+    char *dot;
+    if (!filename) return;
+    dot = strrchr(filename, '.');
+    if (dot && strcmp(dot, ".as") == 0) {
+        *dot = '\0';/*strip .as extension if present*/
+    }
 }

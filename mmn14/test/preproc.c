@@ -49,6 +49,11 @@ int checkMacroDef(const char *token, char **ptr, char *macroName, const char *fi
             }
             strcpy(macroName, exp);/*copy the valid macro name*/
             free(exp);/*free token*/
+            skipSpaces(ptr);/*skip spaces*/
+            if (**ptr != '\0' && **ptr != ';' && **ptr != '\n' && **ptr != '\r') {/*check for extra text*/
+                printError(filename, lineNum, ERR_EXTRA_TEXT, *ptr);/*report extra text error*/
+                return -1;
+            }
             return 1;
         }
         printError(filename, lineNum, ERR_EXTRA_TEXT, "Missing macro name");/*report missing name*/
@@ -165,6 +170,7 @@ boolean preprocess(const char *filename, MacroNode **outMacros) {
 
     strcpy(asName, filename);
     strcpy(amName, filename);
+    stripAsExtension(amName);/*strip .as extension if present*/
     strcat(amName, ".am");/*append .am extension*/
 
     asF = fopen(asName, "r");/*open the file for reading*/
@@ -205,6 +211,11 @@ boolean preprocess(const char *filename, MacroNode **outMacros) {
                         procMacroDef(macroDefStatus, &inMacro, &error, filename, lineNum, macros, macroName,
                                      &macroContent);/*try to process it*/
                     } else if (strcmp(token, "mcroend") == 0) {/*check if token is macro end*/
+                        skipSpaces(&ptr);/*skip spaces*/
+                        if (*ptr != '\0' && *ptr != ';' && *ptr != '\n' && *ptr != '\r') {/*check for extra text*/
+                            printError(filename, lineNum, ERR_EXTRA_TEXT, ptr);/*report extra text error*/
+                            error = TRUE;/*set error flag*/
+                        }
                         addMacro(&macros, macroName, macroContent);/*save macro*/
                         free(macroContent);
                         inMacro = FALSE;
