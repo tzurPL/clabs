@@ -225,12 +225,12 @@ boolean matchComma(char **ptr, ErrorNode **errorList, int lineNum) {
 }
 
 /*
- * checkRegOperand func
+ * getReg func
  * extracts a register op from the string and checks it
  * the input is a pointer to the string pointer, error list, and line num
  * returns the valid register num or -1 if not valid or missing.
  */
-int checkRegOperand(char **ptr, ErrorNode **errorList, int lineNum) {
+int getReg(char **ptr, ErrorNode **errorList, int lineNum) {
     int reg;
     char *t = getToken(ptr);/*get the next token*/
     if (!t) {

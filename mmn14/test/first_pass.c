@@ -236,24 +236,24 @@ boolean procDirective(char *token, char **ptr, char *label, const char *filename
 void procRType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int *IC, ErrorNode **errorList,
                boolean *lineError, Instruction inst) {
     int rs = 0, rt = 0, rd = 0;
-    rs = checkRegOperand(ptr, errorList, lineNum);/*extract first register (rs)*/
+    rs = getReg(ptr, errorList, lineNum);/*extract first register (rs)*/
     if (rs == -1) { *lineError = TRUE;/*set error flag if invalid*/ }
 
     if (!*lineError && !matchComma(ptr, errorList, lineNum)) { *lineError = TRUE;/*ensure comma separates operands*/ }
 
     if (op->opcode == 0) {/*arithmetic/logic: rs, rt, rd*/
         if (!*lineError) {
-            rt = checkRegOperand(ptr, errorList, lineNum);
+            rt = getReg(ptr, errorList, lineNum);
             if (rt == -1) { *lineError = TRUE; }
         }/*extract rt*/
         if (!*lineError && !matchComma(ptr, errorList, lineNum)) { *lineError = TRUE;/*ensure comma*/ }
         if (!*lineError) {
-            rd = checkRegOperand(ptr, errorList, lineNum);
+            rd = getReg(ptr, errorList, lineNum);
             if (rd == -1) { *lineError = TRUE; }
         }/*extract rd*/
     } else {/*copy: rs, rd*/
         if (!*lineError) {
-            rd = checkRegOperand(ptr, errorList, lineNum);
+            rd = getReg(ptr, errorList, lineNum);
             if (rd == -1) { *lineError = TRUE; }
         }/*extract rd directly after rs*/
     }
@@ -279,7 +279,7 @@ void procIType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int *IC
     int rs = 0, rt = 0;
     short immed = 0;
     char *labDep = NULL;
-    rs = checkRegOperand(ptr, errorList, lineNum);/*extract first register (rs)*/
+    rs = getReg(ptr, errorList, lineNum);/*extract first register (rs)*/
     if (rs == -1) { *lineError = TRUE;/*set error flag if invalid*/ }
 
     if (!*lineError && !matchComma(ptr, errorList, lineNum)) { *lineError = TRUE;/*ensure comma separates operands*/ }
@@ -289,12 +289,12 @@ void procIType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int *IC
         if (!*lineError) { immed = checkImmedOperand(ptr, errorList, lineNum, lineError);/*extract immediate value*/ }
         if (!*lineError && !matchComma(ptr, errorList, lineNum)) { *lineError = TRUE;/*ensure comma*/ }
         if (!*lineError) {
-            rt = checkRegOperand(ptr, errorList, lineNum);
+            rt = getReg(ptr, errorList, lineNum);
             if (rt == -1) { *lineError = TRUE; }
         }/*extract target register (rt)*/
     } else if (op->opcode >= MIN_BRANCH_OPCODE && op->opcode <= MAX_BRANCH_OPCODE) {/*cond branch: rs, rt, label*/
         if (!*lineError) {
-            rt = checkRegOperand(ptr, errorList, lineNum);
+            rt = getReg(ptr, errorList, lineNum);
             if (rt == -1) { *lineError = TRUE; }
         }/*extract second register (rt)*/
         if (!*lineError && !matchComma(ptr, errorList, lineNum)) { *lineError = TRUE;/*ensure comma*/ }
