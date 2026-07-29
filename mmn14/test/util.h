@@ -116,59 +116,59 @@ int getRegNum(const char *token);
 boolean matchComma(char **ptr, ErrorNode **errorList, int lineNum);
 
 /*
- * checkRegOperand func
- * extracts a register operand from the string and validates it.
- * the input is a pointer to the string pointer, error list, and line number.
- * returns the valid register number, or -1 if invalid or missing.
+ * getReg func
+ * extracts a register op from the string
+ * the input is a pointer to the string pointer, error list, and line num
+ * returns the valid register num or -1 if not valid or missing.
  */
-int checkRegOperand(char **ptr, ErrorNode **errorList, int lineNum);
+int getReg(char **ptr, ErrorNode **errorList, int lineNum);
 
 /*
- * checkImmedOperand func
- * extracts an immediate value operand from the string.
- * the input is a pointer to the string pointer, error list, line number, and error flag.
- * returns the immediate value, or 0 if missing (sets error flag).
+ * getImmed func
+ * extracts immed val from string
+ * the input is a pointer to the string pointer, error list, line number, and error flag
+ * returns immed val or 0 if missing and turn on the err flag
  */
-short checkImmedOperand(char **ptr, ErrorNode **errorList, int lineNum, boolean *lineError);
+short getImmed(char **ptr, ErrorNode **errorList, int lineNum, boolean *lineError);
 
 /*
- * checkLabelOperand func
- * extracts a label operand from the string.
- * the input is a pointer to the string pointer, error list, line number, and error flag.
- * returns a newly allocated string containing the label, or NULL if missing (sets error flag).
+ * getLabel func
+ * extracts a label operand from the string
+ * the input is a pointer to the string pointer, error list, line number, and error flag
+ * returns a new string with the label or null if missing and put error flag
  */
-char *checkLabelOperand(char **ptr, ErrorNode **errorList, int lineNum, boolean *lineError);
+char *getLabel(char **ptr, ErrorNode **errorList, int lineNum, boolean *lineError);
 
 /*
  * checkExtraText func
- * checks if there is any extra text remaining in the string and reports an error if so.
- * the input is a pointer to the string pointer, error list, line number, and error flag.
- * returns void.
+ * checks if there is any extra text in the string and put an error if yes
+ * the input is a pointer to the string pointer, error list, line number, and error flag
+ * returns void
  */
 void checkExtraText(char **ptr, ErrorNode **errorList, int lineNum, boolean *lineError);
 
 /*
  * checkLineLen func
- * checks if the length of a line is within the allowed limit (max MAX_LINE_CHARS chars).
- * the input is the string line to check.
- * returns TRUE if the length is valid, FALSE otherwise.
+ * checks if the length of a line is max 80 chars
+ * the input is the string line to check
+ * returns true if the length is valid false if no
  */
 boolean checkLineLen(const char *line);
 
 /*
  * isLabelDef func
- * checks if a token string ends with a colon, indicating it is a label definition.
- * the input is the token string to check.
- * returns TRUE if it is a label definition, FALSE otherwise.
+ * checks if a token string ends with a : indicating it is a label def
+ * the input is the token string to check
+ * returns true if it is a label def false if no
  */
 boolean isLabelDef(const char *token);
 
 /*
- * stripAsExtension func
- * strips the .as extension from a filename if it exists.
- * the input is the string to strip the extension from.
+ * remAsExtension func
+ * removes the .as from a filename if exists
+ * the input is the string to where the extension from
  * returns void.
  */
-void stripAsExtension(char *filename);
+void remAsExtension(char *filename);
 
 #endif

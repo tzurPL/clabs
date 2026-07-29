@@ -31,7 +31,7 @@ void writeOutput(const char *filename, SymbolNode *symbols, CodeNode *codeHead, 
 
     /*create the OB file*/
     strcpy(name, filename);
-    stripAsExtension(name);/*strip .as extension if present*/
+    remAsExtension(name);/*strip .as extension if present*/
     strcat(name, ".ob");/*append .ob extension*/
     f = fopen(name, "w");/*open for writing*/
     if (f) {/*if file opened successfully*/
@@ -65,7 +65,7 @@ void writeOutput(const char *filename, SymbolNode *symbols, CodeNode *codeHead, 
     }/*check if any entry symbols exist*/
     if (hasEnt) {/*if there are entry symbols*/
         strcpy(name, filename);
-        stripAsExtension(name);/*strip .as extension if present*/
+        remAsExtension(name);/*strip .as extension if present*/
         strcat(name, ".ent");/*append .ent extension*/
         f = fopen(name, "w");/*open for writing*/
         if (f) {
@@ -81,7 +81,7 @@ void writeOutput(const char *filename, SymbolNode *symbols, CodeNode *codeHead, 
     /*create the EXT file*/
     if (extUsage) {/*if external symbols were used*/
         strcpy(name, filename);
-        stripAsExtension(name);/*strip .as extension if present*/
+        remAsExtension(name);/*strip .as extension if present*/
         strcat(name, ".ext");/*append .ext extension*/
         f = fopen(name, "w");/*open for writing*/
         if (f) {

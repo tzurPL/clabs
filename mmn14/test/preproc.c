@@ -170,7 +170,7 @@ boolean preprocess(const char *filename, MacroNode **outMacros) {
 
     strcpy(asName, filename);
     strcpy(amName, filename);
-    stripAsExtension(amName);/*strip .as extension if present*/
+    remAsExtension(amName);/*strip .as extension if present*/
     strcat(amName, ".am");/*append .am extension*/
 
     asF = fopen(asName, "r");/*open the file for reading*/

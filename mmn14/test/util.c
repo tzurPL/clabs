@@ -226,114 +226,114 @@ boolean matchComma(char **ptr, ErrorNode **errorList, int lineNum) {
 
 /*
  * getReg func
- * extracts a register op from the string and checks it
+ * extracts a register op from the string
  * the input is a pointer to the string pointer, error list, and line num
  * returns the valid register num or -1 if not valid or missing.
  */
 int getReg(char **ptr, ErrorNode **errorList, int lineNum) {
     int reg;
-    char *t = getToken(ptr);/*get the next token*/
+    char *t = getToken(ptr);/*get next token*/
     if (!t) {
         addError(errorList, lineNum, ERR_MISSING_OPERAND, NULL);
         return -1;
-    }/*report missing operand*/
-    reg = getRegNum(t);/*extract register number*/
-    if (reg == -1) { addError(errorList, lineNum, ERR_INVALID_REG, t);/*report invalid register*/ }
-    free(t);/*free the token*/
-    return reg;/*return register number*/
+    }/*put error of missing operand*/
+    reg = getRegNum(t);/*get reg num*/
+    if (reg == -1) { addError(errorList, lineNum, ERR_INVALID_REG, t);/*put error invalid register*/ }
+    free(t);/*free token*/
+    return reg;/*return reg num*/
 }
 
 /*
- * checkImmedOperand func
- * extracts an immed value from the string
- * the input is a pointer to the string pointer, error list, line number, and error flag.
- * returns the immediate value, or 0 if missing (sets error flag).
+ * getImmed func
+ * extracts immed val from string
+ * the input is a pointer to the string pointer, error list, line number, and error flag
+ * returns immed val or 0 if missing and turn on the err flag
  */
-short checkImmedOperand(char **ptr, ErrorNode **errorList, int lineNum, boolean *lineError) {
+short getImmed(char **ptr, ErrorNode **errorList, int lineNum, boolean *lineError) {
     long val;
-    char *t = getToken(ptr);/*get the next token*/
+    char *t = getToken(ptr);/*get next token*/
     if (!t) {
         addError(errorList, lineNum, ERR_MISSING_OPERAND, NULL);
         *lineError = TRUE;
         return 0;
-    }/*report missing operand*/
-    val = atol(t);/*convert token to long integer*/
-    if (val < MIN_IMMED || val > MAX_IMMED) {/*check bounds*/
-        addError(errorList, lineNum, ERR_INVALID_IMMED, t);/*report out of bounds*/
+    }/*put error missing operand*/
+    val = atol(t);/*convert token to long int*/
+    if (val < MIN_IMMED || val > MAX_IMMED) {/*check if val is a valid num for it*/
+        addError(errorList, lineNum, ERR_INVALID_IMMED, t);/*put error out of bounds*/
         *lineError = TRUE;/*set error flag*/
     }
-    free(t);/*free the token*/
-    return (short)val;/*return immediate value*/
+    free(t);/*free token*/
+    return (short)val;/*return immed val*/
 }
 
 /*
- * checkLabelOperand func
- * extracts a label operand from the string.
- * the input is a pointer to the string pointer, error list, line number, and error flag.
- * returns a newly allocated string containing the label, or NULL if missing (sets error flag).
+ * getLabel func
+ * extracts a label operand from the string
+ * the input is a pointer to the string pointer, error list, line number, and error flag
+ * returns a new string with the label or null if missing and put error flag
  */
-char *checkLabelOperand(char **ptr, ErrorNode **errorList, int lineNum, boolean *lineError) {
-    char *t = getToken(ptr);/*get the next token*/
+char *getLabel(char **ptr, ErrorNode **errorList, int lineNum, boolean *lineError) {
+    char *t = getToken(ptr);/*get next token*/
     if (!t) {
         addError(errorList, lineNum, ERR_MISSING_OPERAND, NULL);
         *lineError = TRUE;
         return NULL;
-    }/*report missing operand*/
+    }/*put error missing operand*/
     return t;/*return label token*/
 }
 
 /*
  * checkExtraText func
- * checks if there is any extra text remaining in the string and reports an error if so.
- * the input is a pointer to the string pointer, error list, line number, and error flag.
- * returns void.
+ * checks if there is any extra text in the string and put an error if yes
+ * the input is a pointer to the string pointer, error list, line number, and error flag
+ * returns void
  */
 void checkExtraText(char **ptr, ErrorNode **errorList, int lineNum, boolean *lineError) {
-    skipSpaces(ptr);/*skip leading spaces*/
+    skipSpaces(ptr);/*skip spaces*/
     if (**ptr != '\0' && **ptr != ';' && **ptr != '\n' &&
-        **ptr != '\r') {/*check if anything besides comments or newlines remain*/
-        addError(errorList, lineNum, ERR_EXTRA_TEXT, *ptr);/*report extra text error*/
+        **ptr != '\r') {/*check if anything that is not comments or newlines remain*/
+        addError(errorList, lineNum, ERR_EXTRA_TEXT, *ptr);/*put error extra text*/
         *lineError = TRUE;/*set error flag*/
     }
 }
 
 /*
  * checkLineLen func
- * checks if the length of a line is within the allowed limit (max 80 chars).
- * the input is the string line to check.
- * returns TRUE if the length is valid, FALSE if not.
+ * checks if the length of a line is max 80 chars
+ * the input is the string line to check
+ * returns true if the length is valid false if no
  */
 boolean checkLineLen(const char *line) {
-    int len = strlen(line);/*get initial length*/
-    if (len > 0 && line[len - 1] == '\n') { len--;/*ignore trailing newline*/ }
-    if (len > 0 && line[len - 1] == '\r') { len--;/*ignore trailing carriage return*/ }
-    return len <= MAX_AS_LINE_LEN;/*check against maximum allowed length*/
+    int len = strlen(line);/*get init len*/
+    if (len > 0 && line[len - 1] == '\n') { len--;/*ignore newline*/ }
+    if (len > 0 && line[len - 1] == '\r') { len--;/*ignore return*/ }
+    return len <= MAX_AS_LINE_LEN;/*check max allowed len*/
 }
 
 /*
  * isLabelDef func
- * checks if a token string ends with a colon, indicating it is a label definition.
- * the input is the token string to check.
- * returns TRUE if it is a label definition, FALSE if not.
+ * checks if a token string ends with a : indicating it is a label def
+ * the input is the token string to check
+ * returns true if it is a label def false if no
  */
 boolean isLabelDef(const char *token) {
-    if (token && token[0] != '\0' && token[strlen(token) - 1] == ':') {/*check if token ends with colon*/
-        return TRUE;/*is label definition*/
+    if (token && token[0] != '\0' && token[strlen(token) - 1] == ':') {/*check if token ends with :*/
+        return TRUE;/*is label def*/
     }
-    return FALSE;/*not a label definition*/
+    return FALSE;/*not a label def*/
 }
 
 /*
- * stripAsExtension func
- * strips the .as extension from a filename if it exists.
- * the input is the string to strip the extension from.
+ * remAsExtension func
+ * removes the .as from a filename if exists
+ * the input is the string to where the extension from
  * returns void.
  */
-void stripAsExtension(char *filename) {
-    char *dot;
+void remAsExtension(char *filename) {
+    char *p;
     if (!filename) return;
-    dot = strrchr(filename, '.');
-    if (dot && strcmp(dot, ".as") == 0) {
-        *dot = '\0';/*strip .as extension if present*/
+    p = strrchr(filename, '.');
+    if (p && strcmp(p, ".as") == 0) {
+        *p = '\0';/*remove the .as if exsists*/
     }
 }

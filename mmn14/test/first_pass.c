@@ -286,7 +286,7 @@ void procIType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int *IC
 
     if ((op->opcode >= MIN_ARITH_OPCODE && op->opcode <= MAX_ARITH_OPCODE) ||
         (op->opcode >= MIN_MEM_OPCODE && op->opcode <= MAX_MEM_OPCODE)) {/*rs, immed, rt*/
-        if (!*lineError) { immed = checkImmedOperand(ptr, errorList, lineNum, lineError);/*extract immediate value*/ }
+        if (!*lineError) { immed = getImmed(ptr, errorList, lineNum, lineError);/*extract immediate value*/ }
         if (!*lineError && !matchComma(ptr, errorList, lineNum)) { *lineError = TRUE;/*ensure comma*/ }
         if (!*lineError) {
             rt = getReg(ptr, errorList, lineNum);
@@ -299,7 +299,7 @@ void procIType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int *IC
         }/*extract second register (rt)*/
         if (!*lineError && !matchComma(ptr, errorList, lineNum)) { *lineError = TRUE;/*ensure comma*/ }
         if (!*lineError) {
-            labDep = checkLabelOperand(ptr, errorList, lineNum, lineError);/*extract label dependency*/
+            labDep = getLabel(ptr, errorList, lineNum, lineError);/*extract label dependency*/
         }
     }
     if (!*lineError) { checkExtraText(ptr, errorList, lineNum, lineError);/*check for extra text*/ }
@@ -414,7 +414,7 @@ boolean firstPass(const char *filename, SymbolNode **symbols, CodeNode **codeHea
     DataNode *currData;
 
     strcpy(amName, filename);
-    stripAsExtension(amName);/*strip .as extension if present*/
+    remAsExtension(amName);/*strip .as extension if present*/
     strcat(amName, ".am");/*append .am extension*/
     fp = fopen(amName, "r");/*open the file for reading*/
     if (!fp) {
