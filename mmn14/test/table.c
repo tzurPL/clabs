@@ -42,9 +42,9 @@ void addSymbol(SymbolNode **head, const char *name, int address, Type type) {
 
 /*
  * getSymbol func
- * finds a symbol in the list by its name.
- * the input is the head of the symbol table and the name of the symbol to find.
- * returns a pointer to the SymbolNode if found or NULL if not.
+ * finds a symbol in the list from its name
+ * the input is the head of the symbol table and the name of the symbol to find
+ * returns a pointer to the SymbolNode if found or null if not.
  */
 SymbolNode *getSymbol(SymbolNode *head, const char *name) {
     while (head) {/*go through the list*/
@@ -56,9 +56,9 @@ SymbolNode *getSymbol(SymbolNode *head, const char *name) {
 
 /*
  * freeSymbols func
- * frees the memory allocated for the symbol table.
- * the input is the head of the symbol table.
- * returns void.
+ * frees the memory allocated for the symbol table
+ * the input is the head of the symbol table
+ * returns void
  */
 void freeSymbols(SymbolNode *head) {
     while (head) {/*go through the list*/
@@ -71,12 +71,12 @@ void freeSymbols(SymbolNode *head) {
 
 /*
  * addMacro func
- * adds a macro name and its content to the macro list.
- * the input is a pointer to the head of the macro list, the macro name, and its content.
- * returns void.
+ * adds a macro name and its content to the macro list
+ * the input is a pointer to the head of the macro list, the macro name, and its content
+ * returns void
  */
 void addMacro(MacroNode **head, const char *name, const char *content) {
-    MacroNode *newNode = (MacroNode *)safeMalloc(sizeof(MacroNode));/*allocate memory for new node*/
+    MacroNode *newNode = (MacroNode *)safeMalloc(sizeof(MacroNode));/*alloc memory for new node*/
     newNode->name = strdupp(name);
     newNode->content = strdupp(content);
     newNode->next = *head;
@@ -85,9 +85,9 @@ void addMacro(MacroNode **head, const char *name, const char *content) {
 
 /*
  * getMacroContent func
- * searches for a macro and returns its things.
- * the input is the head of the macro list and the macro name needed to find.
- * returns the macro content string if found, or null if not.
+ * searches for a macro and returns its things
+ * the input is the head of the macro list and the macro name needed to find
+ * returns the macro content string if found, or null if no
  */
 char *getMacroContent(MacroNode *head, const char *name) {
     while (head) {/*go through the list*/
@@ -99,7 +99,7 @@ char *getMacroContent(MacroNode *head, const char *name) {
 
 /*
  * freeMacros func
- * frees the memory allocated for all the macros in the list.
+ * frees all the macros in the list.
  * the input is the head of the macro list.
  * returns void
  */
