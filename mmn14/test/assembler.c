@@ -15,9 +15,9 @@
 
 /*
  * writeOutput func
- * generates the output files (.ob, .ent, .ext) after a successful assembly.
- * the input is filename, symbols list, code list, data list, external usage list, instruction counter (IC), and data
- * counter (DC). returns void.
+ * generates the output files
+ * the input is filename, symbols list, code list, data list, extern usage list, instruction counter, and data counter
+ * returns void
  */
 void writeOutput(const char *filename, SymbolNode *symbols, CodeNode *codeHead, DataNode *dataHead, ExtUsage *extUsage,
                  int IC, int DC) {
@@ -29,20 +29,22 @@ void writeOutput(const char *filename, SymbolNode *symbols, CodeNode *codeHead, 
     boolean hasEnt = FALSE;
     int count = 0;
 
-    /*create the OB file*/
+    /*create the ob file*/
     strcpy(name, filename);
-    remAsExtension(name);/*strip .as extension if present*/
-    strcat(name, ".ob");/*append .ob extension*/
-    f = fopen(name, "w");/*open for writing*/
-    if (f) {/*if file opened successfully*/
-        /*header: total instruction bytes and total data bytes*/
+    remAsExtension(name);/*remove the .as extension if present*/
+    strcat(name, ".ob");/*append .ob to the file*/
+    f = fopen(name, "w");/*open file*/
+    if (f) {/*if file opened*/
+        /*put the header of the file with the total instruction bytes and total data bytes*/
         fprintf(f, "%d %d\n", IC - IC_INIT, DC);
         c = codeHead;
-        while (c) {/*iterate through code nodes*/
-            WordBytes wb;
-            wb.word = c->inst.word;
-            fprintf(f, "%04d %02X %02X %02X %02X\n", c->address, wb.bytes.b0, wb.bytes.b1, wb.bytes.b2, wb.bytes.b3);
-            c = c->next;
+        while (c) {/*go through code nodes and print them as machine code in hex according to the guide for the project*/
+            /*The process of printing the code nodes as machine code is done via bitfields */
+            mCode mc;
+            mc.rawCode = c->inst.rawCode;/*copy the raw code for disection */
+            /*print the instruction as hex via spliting it to bitfields for every byte and then translate it to hex */
+            fprintf(f, "%04d %02X %02X %02X %02X\n", c->address, mc.bytes.b0, mc.bytes.b1, mc.bytes.b2, mc.bytes.b3);
+            c = c->next;/*move to next code node */
         }
         d = dataHead;
         while (d) {/*iterate through data nodes*/

@@ -48,7 +48,7 @@ typedef union {
     RType r;
     IType i;
     JType j;
-    unsigned int word;
+    unsigned int rawCode;
 } Instruction;
 
 typedef union {
@@ -58,8 +58,8 @@ typedef union {
         unsigned int b2 : 8;
         unsigned int b3 : 8;
     } bytes;
-    unsigned int word;
-} WordBytes;
+    unsigned int rawCode;
+} mCode;
 
 /* Immediate bounds */
 #define MAX_IMMED 32767

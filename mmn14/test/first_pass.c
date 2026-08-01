@@ -79,17 +79,17 @@ boolean checkData(char **ptr, DataNode **dataHead, int *DC, int size, const char
         if (size == 1) {
             addDataNode(dataHead, (unsigned char)val, (*DC)++);
         } else if (size == (NUM_BYTES_WORD / 2)) {
-            WordBytes wb;
-            wb.word = val;
-            addDataNode(dataHead, wb.bytes.b0, (*DC)++);
-            addDataNode(dataHead, wb.bytes.b1, (*DC)++);
+            mCode mc;
+            mc.rawCode = val;
+            addDataNode(dataHead, mc.bytes.b0, (*DC)++);
+            addDataNode(dataHead, mc.bytes.b1, (*DC)++);
         } else if (size == NUM_BYTES_WORD) {
-            WordBytes wb;
-            wb.word = val;
-            addDataNode(dataHead, wb.bytes.b0, (*DC)++);
-            addDataNode(dataHead, wb.bytes.b1, (*DC)++);
-            addDataNode(dataHead, wb.bytes.b2, (*DC)++);
-            addDataNode(dataHead, wb.bytes.b3, (*DC)++);
+            mCode mc;
+            mc.rawCode = val;
+            addDataNode(dataHead, mc.bytes.b0, (*DC)++);
+            addDataNode(dataHead, mc.bytes.b1, (*DC)++);
+            addDataNode(dataHead, mc.bytes.b2, (*DC)++);
+            addDataNode(dataHead, mc.bytes.b3, (*DC)++);
         }
 
         skipSpaces(ptr);
@@ -376,7 +376,7 @@ boolean procInstruction(char *token, char **ptr, char *label, int lineNum, Symbo
     Opcode *op = getOpcode(token);/*look up the instruction opcode*/
     Instruction inst;
     if (op) {/*if valid instruction*/
-        inst.word = 0;/*initialize the word with 0*/
+        inst.rawCode = 0;/*initialize the word with 0*/
         inst.r.opcode = op->opcode;/*set opcode*/
         if (label && !lineError) { addSymbol(symbols, label, *IC, CODE);/*add label to symbol table if present*/ }
 
