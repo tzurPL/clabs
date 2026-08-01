@@ -12,14 +12,14 @@
  * addCodeNode func
  * adds a new code node to the end of the code list.
  * the input is a pointer to the head of the code list, the machine word, address, line number, and optional label
- * dependency. returns void.
+ * reference. returns void.
  */
-void addCodeNode(CodeNode **head, Instruction inst, int address, int lineNum, char *labelDep) {
+void addCodeNode(CodeNode **head, Instruction inst, int address, int lineNum, char *labelRef) {
     CodeNode *newNode = (CodeNode *)safeMalloc(sizeof(CodeNode));/*allocate memory for new node*/
     newNode->inst = inst;/*set the machine word*/
     newNode->address = address;/*set the address*/
     newNode->lineNum = lineNum;/*set the line number*/
-    newNode->labelDep = labelDep ? strdupp(labelDep) : NULL;/*copy label dependency if exists*/
+    newNode->labelRef = labelRef ? strdupp(labelRef) : NULL;/*copy label reference if exists*/
     newNode->next = NULL;
     if (!*head) {
         *head = newNode;/*if list is empty, set as head*/
@@ -278,7 +278,7 @@ void procIType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int *IC
                boolean *lineError, Instruction inst) {
     int rs = 0, rt = 0;
     short immed = 0;
-    char *labDep = NULL;
+    char *labelRef = NULL;
     rs = getReg(ptr, errorList, lineNum);/*extract first register (rs)*/
     if (rs == -1) { *lineError = TRUE;/*set error flag if invalid*/ }
 
@@ -299,7 +299,7 @@ void procIType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int *IC
         }/*extract second register (rt)*/
         if (!*lineError && !matchComma(ptr, errorList, lineNum)) { *lineError = TRUE;/*ensure comma*/ }
         if (!*lineError) {
-            labDep = getLabel(ptr, errorList, lineNum, lineError);/*extract label dependency*/
+            labelRef = getLabel(ptr, errorList, lineNum, lineError);/*extract label reference*/
         }
     }
     if (!*lineError) { checkExtraText(ptr, errorList, lineNum, lineError);/*check for extra text*/ }
@@ -307,10 +307,10 @@ void procIType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int *IC
         inst.i.rs = rs;
         inst.i.rt = rt;
         inst.i.immed = immed;
-        addCodeNode(codeHead, inst, *IC, lineNum, labDep);
+        addCodeNode(codeHead, inst, *IC, lineNum, labelRef);
         *IC += NUM_BYTES_WORD;
     }/*construct and append code node*/
-    if (labDep) { free(labDep);/*free the label string if allocated*/ }
+    if (labelRef) { free(labelRef);/*free the label string if allocated*/ }
 }
 
 /*
@@ -322,7 +322,7 @@ void procIType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int *IC
 void procJType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int *IC, ErrorNode **errorList,
                boolean *lineError, Instruction inst) {
     int regBit = 0, addr = 0;
-    char *labDep = NULL;
+    char *labelRef = NULL;
     if (op->opcode != STOP_OPCODE) {/*jmp, la, call*/
         char *t = getToken(ptr);/*get the single operand token*/
         if (t) {/*if operand exists*/
@@ -346,8 +346,8 @@ void procJType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int *IC
                 }/*validate operand type*/
                 else {
                     regBit = 0;
-                    labDep = strdupp(t);
-                }/*record label dependency*/
+                    labelRef = strdupp(t);
+                }/*record label reference*/
             }
             free(t);/*free the token*/
         } else {/*if operand is missing*/
@@ -359,10 +359,10 @@ void procJType(char **ptr, Opcode *op, int lineNum, CodeNode **codeHead, int *IC
     if (!*lineError) {
         inst.j.reg = regBit;
         inst.j.address = addr;
-        addCodeNode(codeHead, inst, *IC, lineNum, labDep);
+        addCodeNode(codeHead, inst, *IC, lineNum, labelRef);
         *IC += NUM_BYTES_WORD;
     }/*construct and append code node*/
-    if (labDep) { free(labDep);/*free the label string if allocated*/ }
+    if (labelRef) { free(labelRef);/*free the label string if allocated*/ }
 }
 
 /*

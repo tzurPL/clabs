@@ -68,12 +68,12 @@ void procEntry(char **ptr, SymbolNode *symbols, ErrorNode **errorList, int lineN
 
 /*
  * procCodeNode func
- * processes a code node to resolve its label dependency. calculates the immed or address and updates the word.
+ * processes a code node to resolve its label reference. calculates the immed or address and updates the word.
  * the input is the code node, symbol table, external usage list, error list, and error flag.
  * returns void.
  */
 void procCodeNode(CodeNode *curr, SymbolNode *symbols, ExtUsage **extUsage, ErrorNode **errorList, boolean *error) {
-    SymbolNode *sym = getSymbol(symbols, curr->labelDep);/*look up the dependent symbol*/
+    SymbolNode *sym = getSymbol(symbols, curr->labelRef);/*look up the dependent symbol*/
     unsigned int opcode;
     int immed;
 
@@ -88,7 +88,7 @@ void procCodeNode(CodeNode *curr, SymbolNode *symbols, ExtUsage **extUsage, Erro
                 immed = sym->address - curr->address;/*calculate offset*/
                 if (immed > MAX_IMMED || immed < MIN_IMMED) {/*check offset bounds*/
                     addError(errorList, curr->lineNum, ERR_BRANCH_TOO_FAR,
-                             curr->labelDep);/*report error if out of bounds*/
+                             curr->labelRef);/*report error if out of bounds*/
                     *error = TRUE;/*set error flag*/
                 }
                 curr->inst.i.immed = immed;/*update instruction word*/
@@ -102,7 +102,7 @@ void procCodeNode(CodeNode *curr, SymbolNode *symbols, ExtUsage **extUsage, Erro
             }
         }
     } else {/*symbol not found*/
-        addError(errorList, curr->lineNum, ERR_UNDEFINED_SYMBOL, curr->labelDep);/*report error*/
+        addError(errorList, curr->lineNum, ERR_UNDEFINED_SYMBOL, curr->labelRef);/*report error*/
         *error = TRUE;/*set error flag*/
     }
 }
@@ -147,8 +147,8 @@ boolean secondPass(const char *filename, SymbolNode *symbols, CodeNode *codeHead
     fclose(fp);/*close the file*/
 
     curr = codeHead;
-    while (curr) {/*iterate through code nodes to resolve dependencies*/
-        if (curr->labelDep) { procCodeNode(curr, symbols, extUsage, errorList, &error);/*resolve dependency*/ }
+    while (curr) {/*iterate through code nodes to resolve references*/
+        if (curr->labelRef) { procCodeNode(curr, symbols, extUsage, errorList, &error);/*resolve reference*/ }
         curr = curr->next;
     }
     return !error;

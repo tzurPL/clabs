@@ -15,7 +15,7 @@ typedef struct CodeNode {
     Instruction inst;
     int address;
     int lineNum;
-    char *labelDep;
+    char *labelRef;
     struct CodeNode *next;
 } CodeNode;
 

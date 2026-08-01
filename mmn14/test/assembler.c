@@ -109,7 +109,7 @@ void freeCode(CodeNode *head) {
     while (head) {/*go through the list*/
         CodeNode *temp = head;
         head = head->next;/*move to next node*/
-        if (temp->labelDep) { free(temp->labelDep);/*free label dep string if exists*/ }
+        if (temp->labelRef) { free(temp->labelRef);/*free label reference if exists*/ }
         free(temp);/*free node*/
     }
 }
