@@ -11,6 +11,7 @@
 #include "globals.h"
 #include "table.h"
 
+/*Code node linked list */
 typedef struct CodeNode {
     Instruction inst;
     int address;
@@ -19,6 +20,7 @@ typedef struct CodeNode {
     struct CodeNode *next;
 } CodeNode;
 
+/*Data nodes linked list */
 typedef struct DataNode {
     unsigned char byte;
     int address;
@@ -27,9 +29,9 @@ typedef struct DataNode {
 
 /*
  * firstPass func
- * executes the first pass of the assembler, processing labels, directives, and instructions to build the symbol table
- * and data/code images. the input is filename, symbols list, code list, data list, IC, DC, error list, and macros.
- * returns boolean indicating whether the pass was completely successful.
+ * first pass of the assembler
+ * and data/code images. the input is filename, symbols list, code list, data list, IC, DC, error list, and macros
+ * returns true if the pass was ssuccessful and false if not
  */
 boolean firstPass(const char *filename, SymbolNode **symbols, CodeNode **codeHead, DataNode **dataHead, int *IC,
                   int *DC, ErrorNode **errorList, MacroNode *macros);
