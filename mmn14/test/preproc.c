@@ -42,6 +42,11 @@ int checkMacroDef(const char *token, char **ptr, char *macroName, const char *fi
                 free(exp);/*free token*/
                 return -1;
             }
+            if (strlen(exp) > MAX_LABEL_LEN) {/*check if macro name is too long*/
+                printError(filename, lineNum, ERR_LABEL_TOO_LONG, exp);/*save error*/
+                free(exp);/*free token*/
+                return -1;
+            }
             if (!checkLabelN(exp)) {/*check if name is a valid label*/
                 printError(filename, lineNum, ERR_INVALID_LABEL_FORMAT, exp);/*save error*/
                 free(exp);/*free token*/

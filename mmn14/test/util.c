@@ -251,14 +251,18 @@ int getReg(char **ptr, ErrorNode **errorList, int lineNum) {
  */
 short getImmed(char **ptr, ErrorNode **errorList, int lineNum, boolean *lineError) {
     long val;
+    char *endptr;
     char *t = getToken(ptr);/*get next token*/
     if (!t) {
         addError(errorList, lineNum, ERR_MISSING_OPERAND, NULL);
         *lineError = TRUE;
         return 0;
     }/*put error missing operand*/
-    val = atol(t);/*convert token to long int*/
-    if (val < MIN_IMMED || val > MAX_IMMED) {/*check if val is a valid num for it*/
+    val = strtol(t, &endptr, 10);/*convert token to long int*/
+    if (*endptr != '\0') {/*check for invalid chars*/
+        addError(errorList, lineNum, ERR_INVALID_IMMED, t);/*put error invalid immed*/
+        *lineError = TRUE;
+    } else if (val < MIN_IMMED || val > MAX_IMMED) {/*check if val is a valid num for it*/
         addError(errorList, lineNum, ERR_INVALID_IMMED, t);/*put error out of bounds*/
         *lineError = TRUE;/*set error flag*/
     }

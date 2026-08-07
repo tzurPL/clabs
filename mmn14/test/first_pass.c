@@ -65,6 +65,7 @@ boolean checkData(char **ptr, DataNode **dataHead, int *DC, int size, const char
                   ErrorNode **errorList) {
     char *t;
     long val;
+    char *endptr;
     boolean err = FALSE;
     boolean loopflag = FALSE;
     /*disect the line */
@@ -74,7 +75,12 @@ boolean checkData(char **ptr, DataNode **dataHead, int *DC, int size, const char
         return FALSE;
     }/*check for leading comma*/
     while (!loopflag && (t = getToken(ptr))) {/*go through tokens*/
-        val = atol(t);/*convert token to int*/
+        val = strtol(t, &endptr, 10);/*convert token to int*/
+        if (*endptr != '\0') {/*check for invalid chars*/
+            addError(errorList, lineNum, ERR_INVALID_IMMED, t);
+            free(t);
+            return FALSE;
+        }
         free(t);
         /*add data nodes by checking their sizes*/
         if (size == 1) {/*db */

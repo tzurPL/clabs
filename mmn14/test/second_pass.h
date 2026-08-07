@@ -20,19 +20,19 @@ typedef struct ExtNode {
 } ExtNode;
 
 /*
- * secondPass func
- * the second pass of the assembler
- * the input is the filename, symbol table, code list, a pointer to store external nodes, error list
- * returns true if success and false if not
- */
-boolean secondPass(const char *filename, SymbolNode *symbols, CodeNode *codeHead, ExtNode **extUsage,ErrorNode **errorList);
-
-/*
  * freeExtNode func
  * frees memory allocated for the extern list
  * the input is the head of the extern list
  * returns void
  */
 void freeExtUsage(ExtNode *head);
+
+/*
+ * secondPass func
+ * the second pass of the assembler
+ * the input is the filename, symbol table, code list, a pointer to store external nodes, error list
+ * returns true if success and false if not
+ */
+boolean secondPass(const char *filename, SymbolNode *symbols, CodeNode *codeHead, ExtNode **extUsage,ErrorNode **errorList);
 
 #endif

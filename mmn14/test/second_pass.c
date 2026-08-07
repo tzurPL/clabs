@@ -108,6 +108,21 @@ void procCodeNode(CodeNode *curr, SymbolNode *symbols, ExtNode **extNode, ErrorN
 }
 
 /*
+ * freeExtUsage func
+ * frees memory allocated for the extern list
+ * the input is the head of the extern list
+ * returns void
+ */
+void freeExtUsage(ExtNode *head) {
+    while (head) {
+        ExtNode *temp = head;
+        head = head->next;
+        if (temp->name) { free(temp->name); }
+        free(temp);
+    }
+}
+
+/*
  * secondPass func
  * the second pass of the assembler
  * the input is the filename, symbol table, code list, a pointer to store external nodes, error list
