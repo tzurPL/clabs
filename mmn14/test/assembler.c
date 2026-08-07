@@ -19,7 +19,7 @@
  * the input is filename, symbols list, code list, data list, extern usage list, instruction counter, and data counter
  * returns void
  */
-void writeOutput(const char *filename, SymbolNode *symbols, CodeNode *codeHead, DataNode *dataHead, ExtUsage *extUsage,
+void writeOutput(const char *filename, SymbolNode *symbols, CodeNode *codeHead, DataNode *dataHead, ExtNode *extNode,
                  int IC, int DC) {
     char name[MAX_LINE_LENGTH];
     FILE *f;
@@ -36,7 +36,7 @@ void writeOutput(const char *filename, SymbolNode *symbols, CodeNode *codeHead, 
     f = fopen(name, "w");/*open file*/
     if (f) {/*if file opened*/
         /*put the header of the file with the total instruction bytes and total data bytes*/
-        fprintf(f, "%d %d\n", IC - IC_INIT, DC);
+        fprintf(f, "\t%d %d\n", IC - IC_INIT, DC);
         c = codeHead;
         while (c) {/*go through code nodes and print them as machine code in hex according to the guide for the project*/
             /*The process of printing the code nodes as machine code is done via bitfields */
@@ -84,15 +84,15 @@ void writeOutput(const char *filename, SymbolNode *symbols, CodeNode *codeHead, 
     }
 
     /*create EXT file*/
-    if (extUsage) {/*if extern symbols were used*/
+    if (extNode) {/*if extern symbols were used*/
         strcpy(name, filename);
         remAsExtension(name);/*remove .as extension if exists*/
         strcat(name, ".ext");/*add .ext extension*/
         f = fopen(name, "w");/*open for writing*/
         if (f) {
-            while (extUsage) {
-                fprintf(f, "%s %04d\n", extUsage->name, extUsage->address);
-                extUsage = extUsage->next;
+            while (extNode) {
+                fprintf(f, "%s %04d\n", extNode->name, extNode->address);
+                extNode = extNode->next;
             }/*write extern deets*/
             fclose(f);/*close file*/
         }
@@ -138,7 +138,7 @@ void processFile(const char *filename) {
     SymbolNode *symbols = NULL;/*init symbol table*/
     CodeNode *codeHead = NULL;/*init code list*/
     DataNode *dataHead = NULL;/*init data list*/
-    ExtUsage *extUsage = NULL;/*init extern list*/
+    ExtNode *extNode = NULL;/*init extern list*/
     ErrorNode *errorList = NULL;/*init error list*/
     MacroNode *macros = NULL;/*init macro list*/
     int IC = IC_INIT, DC = 0;/*init counters*/
@@ -152,10 +152,10 @@ void processFile(const char *filename) {
     }
 
     pass1 = firstPass(filename, &symbols, &codeHead, &dataHead, &IC, &DC, &errorList, macros);/*run first pass*/
-    pass2 = secondPass(filename, symbols, codeHead, &extUsage, &errorList);/*run second pass*/
+    pass2 = secondPass(filename, symbols, codeHead, &extNode, &errorList);/*run second pass*/
 
     if (pass1 && pass2) {/*if passes succeeded*/
-        writeOutput(filename, symbols, codeHead, dataHead, extUsage, IC, DC);/*write output files*/
+        writeOutput(filename, symbols, codeHead, dataHead, extNode, IC, DC);/*write output files*/
         printf("Successfully assembled %s\n", filename);
     } else {
         printErrors(filename, errorList);/*print all errors*/
@@ -166,7 +166,7 @@ void processFile(const char *filename) {
     freeSymbols(symbols);
     freeCode(codeHead);
     freeData(dataHead);
-    freeExtUsage(extUsage);
+    freeExtUsage(extNode);
     freeErrors(errorList);
     freeMacros(macros);
 }

@@ -12,27 +12,27 @@
 #include "globals.h"
 #include "table.h"
 
-typedef struct ExtUsage {
+/*extrn list */
+typedef struct ExtNode {
     char *name;
     int address;
-    struct ExtUsage *next;
-} ExtUsage;
+    struct ExtNode *next;
+} ExtNode;
 
 /*
  * secondPass func
- * executes the second pass of the assembler, resolving label addresses in code nodes and marking entry symbols.
- * the input is the filename, symbol table, code list, a pointer to store external usages, and the error list.
- * returns boolean indicating whether the pass succeeded without errors.
+ * the second pass of the assembler
+ * the input is the filename, symbol table, code list, a pointer to store external nodes, error list
+ * returns true if success and false if not
  */
-boolean secondPass(const char *filename, SymbolNode *symbols, CodeNode *codeHead, ExtUsage **extUsage,
-                   ErrorNode **errorList);
+boolean secondPass(const char *filename, SymbolNode *symbols, CodeNode *codeHead, ExtNode **extUsage,ErrorNode **errorList);
 
 /*
- * freeExtUsage func
- * frees the memory allocated for the external usage list.
- * the input is the head of the external usage list.
- * returns void.
+ * freeExtNode func
+ * frees memory allocated for the extern list
+ * the input is the head of the extern list
+ * returns void
  */
-void freeExtUsage(ExtUsage *head);
+void freeExtUsage(ExtNode *head);
 
 #endif

@@ -10,110 +10,110 @@
 #include <string.h>
 
 /*
- * addExtUsage func
- * adds a new external usage node to the external usage list.
- * the input is a pointer to the head of the external usage list, the external symbol name, and the address it was used
- * at. returns void.
+ * addExtNode func
+ * adds a new external node to the extern list
+ * the input is a pointer to the head of the extern list, the external symbol name, and it's address
+ * returns void.
  */
-void addExtUsage(ExtUsage **head, const char *name, int address) {
-    ExtUsage *newNode = (ExtUsage *)safeMalloc(sizeof(ExtUsage));/*allocate memory for new node*/
-    newNode->name = strdupp(name);/*duplicate name*/
-    newNode->address = address;/*set the address*/
+void addExtNode(ExtNode **head, const char *name, int address) {
+    ExtNode *newNode = (ExtNode *)safeMalloc(sizeof(ExtNode));/*alloc memory for new node*/
+    newNode->name = strdupp(name);/*dup name*/
+    newNode->address = address;/*set address*/
     newNode->next = NULL;
     if (!*head) {
-        *head = newNode;/*if list is empty, set as head*/
+        *head = newNode;/*if list is empty set as head*/
     } else {
-        ExtUsage *curr = *head;
+        ExtNode *curr = *head;
         while (curr->next) {
-            curr = curr->next;/*find the end of the list*/
+            curr = curr->next;/*find end of list*/
         }
-        curr->next = newNode;/*append the new node*/
+        curr->next = newNode;/*add new node*/
     }
 }
 
 /*
- * freeExtUsage func
- * frees the memory allocated for the external usage list.
- * the input is the head of the external usage list.
- * returns void.
+ * freeExtNode func
+ * frees memory allocated for the extern list
+ * the input is the head of the extern list
+ * returns void
  */
-void freeExtUsage(ExtUsage *head) {
-    while (head) {/*iterate through the list*/
-        ExtUsage *temp = head;
+void freeExtNode(ExtNode *head) {
+    while (head) {/*go through list*/
+        ExtNode *temp = head;
         head = head->next;/*move to next node*/
-        free(temp->name);/*free the name string*/
-        free(temp);/*free the node itself*/
+        free(temp->name);/*free name*/
+        free(temp);/*free node*/
     }
 }
 
 /*
  * procEntry func
- * processes the .entry directive. finds the symbol and marks it as an entry, reports error if not found.
- * the input is string pointer, symbol table, error list, line number, and error flag.
- * returns void.
+ * processes .entry, finds the symbol and marks it as an entry, save error if not found
+ * the input is string pointer, symbol table, error list, line num,error flag
+ * returns void
  */
 void procEntry(char **ptr, SymbolNode *symbols, ErrorNode **errorList, int lineNum, boolean *error) {
-    char *ent = getToken(ptr);/*get the entry symbol name*/
-    if (ent) {/*if an entry symbol was provided*/
-        SymbolNode *sym = getSymbol(symbols, ent);/*look up symbol in table*/
+    char *ent = getToken(ptr);/*get entry symbol name*/
+    if (ent) {/*if entry symbol found*/
+        SymbolNode *sym = getSymbol(symbols, ent);/*search symbol in table*/
         if (sym) {
             sym->isEntry = TRUE;/*mark as entry*/
         } else {
-            addError(errorList, lineNum, ERR_ENTRY_NOT_FOUND, ent);/*report error if not found*/
+            addError(errorList, lineNum, ERR_ENTRY_NOT_FOUND, ent);/*save error if not found*/
             *error = TRUE;/*set error flag*/
         }
-        free(ent);/*free the token*/
+        free(ent);/*free token*/
     }
 }
 
 /*
  * procCodeNode func
- * processes a code node to resolve its label reference. calculates the immed or address and updates the word.
- * the input is the code node, symbol table, external usage list, error list, and error flag.
- * returns void.
+ * processes a code node to try and find the label reference missing info
+ * the input is the code node, symbol table, extern list, error list, error flag
+ * returns void
  */
-void procCodeNode(CodeNode *curr, SymbolNode *symbols, ExtUsage **extUsage, ErrorNode **errorList, boolean *error) {
-    SymbolNode *sym = getSymbol(symbols, curr->labelRef);/*look up the dependent symbol*/
+void procCodeNode(CodeNode *curr, SymbolNode *symbols, ExtNode **extNode, ErrorNode **errorList, boolean *error) {
+    SymbolNode *sym = getSymbol(symbols, curr->labelRef);/*look up symbol*/
     unsigned int opcode;
     int immed;
 
-    if (sym) {/*if symbol was found*/
-        opcode = curr->inst.i.opcode;/*extract opcode*/
-        if (opcode >= MIN_BRANCH_OPCODE && opcode <= MAX_BRANCH_OPCODE) {/*if it is a conditional branch*/
-            if (sym->isExternal) {/*if branching to an external label*/
+    if (sym) {/*if symbol found*/
+        opcode = curr->inst.i.opcode;/*get opcode*/
+        if (opcode >= MIN_BRANCH_OPCODE && opcode <= MAX_BRANCH_OPCODE) {/*if is a conditional branch*/
+            if (sym->isExternal) {/*if branching to an extern label*/
                 addError(errorList, curr->lineNum, ERR_BRANCH_TOO_FAR,
-                         "cannot branch to external label");/*report error*/
+                         "cannot branch to external label");/*save error*/
                 *error = TRUE;/*set error flag*/
             } else {/*local label*/
-                immed = sym->address - curr->address;/*calculate offset*/
-                if (immed > MAX_IMMED || immed < MIN_IMMED) {/*check offset bounds*/
+                immed = sym->address - curr->address;/*calc immed val*/
+                if (immed > MAX_IMMED || immed < MIN_IMMED) {/*check if it is in bounds*/
                     addError(errorList, curr->lineNum, ERR_BRANCH_TOO_FAR,
-                             curr->labelRef);/*report error if out of bounds*/
+                             curr->labelRef);/*save error if out of bounds*/
                     *error = TRUE;/*set error flag*/
                 }
-                curr->inst.i.immed = immed;/*update instruction word*/
+                curr->inst.i.immed = immed;/*update instruction*/
             }
-        } else if (opcode >= MIN_JMP_OPCODE && opcode <= MAX_JMP_OPCODE) {/*if it is a jump instruction*/
-            if (sym->isExternal) {/*if jumping to an external label*/
-                curr->inst.j.address = 0;/*clear address bits*/
-                addExtUsage(extUsage, sym->name, curr->address);/*record external usage*/
+        } else if (opcode >= MIN_JMP_OPCODE && opcode <= MAX_JMP_OPCODE) {/*if it is a jump intruction*/
+            if (sym->isExternal) {/*if jumping to an extern label*/
+                curr->inst.j.address = 0;/*clear address*/
+                addExtNode(extNode, sym->name, curr->address);/*save to external node*/
             } else {/*local label*/
-                curr->inst.j.address = sym->address;/*encode direct address*/
+                curr->inst.j.address = sym->address;/*save address*/
             }
         }
     } else {/*symbol not found*/
-        addError(errorList, curr->lineNum, ERR_UNDEFINED_SYMBOL, curr->labelRef);/*report error*/
+        addError(errorList, curr->lineNum, ERR_UNDEFINED_SYMBOL, curr->labelRef);/*save error*/
         *error = TRUE;/*set error flag*/
     }
 }
 
 /*
  * secondPass func
- * executes the second pass of the assembler, resolving label addresses in code nodes and marking entry symbols.
- * the input is the filename, symbol table, code list, a pointer to store external usages, and the error list.
- * returns boolean indicating whether the pass succeeded without errors.
+ * the second pass of the assembler
+ * the input is the filename, symbol table, code list, a pointer to store external nodes, error list
+ * returns true if success and false if not
  */
-boolean secondPass(const char *filename, SymbolNode *symbols, CodeNode *codeHead, ExtUsage **extUsage,
+boolean secondPass(const char *filename, SymbolNode *symbols, CodeNode *codeHead, ExtNode **extNode,
                    ErrorNode **errorList) {
     char amName[MAX_LINE_LENGTH];
     FILE *fp;
@@ -124,31 +124,34 @@ boolean secondPass(const char *filename, SymbolNode *symbols, CodeNode *codeHead
     int lineNum = 0;
 
     strcpy(amName, filename);
-    remAsExtension(amName);/*strip .as extension if present*/
-    strcat(amName, ".am");/*append .am extension*/
-    fp = fopen(amName, "r");/*open the file for reading*/
+    remAsExtension(amName);/*remove .as*/
+    strcat(amName, ".am");/*add .am*/
+    fp = fopen(amName, "r");/*open file for reading*/
     if (!fp) { return FALSE; }
 
     while (fgets(line, sizeof(line), fp)) {/*read line by line*/
         ptr = line;
         lineNum++;
-        if (!isEmptyLine(line) && !isCommentLine(line)) {/*ignore empty and comment lines*/
-            token = getToken(&ptr);/*get first token*/
+        if (!isEmptyLine(line) && !isCommentLine(line)) {/*skip empty and comments*/
+            token = getToken(&ptr);/*get token*/
             if (token && token[0] != '\0' && token[strlen(token) - 1] == ':') {
                 free(token);
                 token = getToken(&ptr);
-            }/*skip label if present*/
-            if (token && strcmp(token, ".entry") == 0) {/*process entry directive*/
+            }/*skip label if exsists*/
+
+            if (token && strcmp(token, ".entry") == 0) {/*proc entry*/
                 procEntry(&ptr, symbols, errorList, lineNum, &error);
             }
             if (token) { free(token); }
         }
     }
-    fclose(fp);/*close the file*/
+    fclose(fp);/*close file*/
 
     curr = codeHead;
-    while (curr) {/*iterate through code nodes to resolve references*/
-        if (curr->labelRef) { procCodeNode(curr, symbols, extUsage, errorList, &error);/*resolve reference*/ }
+    while (curr) {/*go through code nodes to fill mising info*/
+        if (curr->labelRef) {
+            procCodeNode(curr, symbols, extNode, errorList, &error);/*find missing info for label refrences*/
+        }
         curr = curr->next;
     }
     return !error;
