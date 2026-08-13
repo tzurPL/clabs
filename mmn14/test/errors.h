@@ -9,7 +9,7 @@
 
 #include "globals.h"
 
-/* error types for better reporting */
+/* error types */
 typedef enum {
     ERR_OPEN_FILE,
     ERR_ALLOC_FAIL,
@@ -36,6 +36,7 @@ typedef enum {
     ERR_BRANCH_TOO_FAR
 } ErrorType;
 
+/* error list */
 typedef struct ErrorNode {
     int lineNum;
     ErrorType type;
@@ -45,33 +46,33 @@ typedef struct ErrorNode {
 
 /*
  * addError func
- * collects an error into a list to be printed later.
- * the input is a pointer to the head of the error list, line number, error type, and optional extra info.
- * returns void.
+ * adds new error node to end of error list
+ * the input is a pointer to the head of the error list, line num, error type, extra info
+ * returns void
  */
 void addError(ErrorNode **head, int lineNum, ErrorType type, const char *extraInfo);
 
 /*
- * printErrors func
- * sorts and prints all collected errors.
- * the input is the filename and the head of the error list.
- * returns void.
+ * printError func
+ * prints error message to stdout according to the error peramenters
+ * the input is the filename, line num, error type, extra info
+ * returns void
  */
 void printErrors(const char *filename, ErrorNode *head);
 
 /*
  * freeErrors func
- * cleans up the error list by freeing its memory.
- * the input is the head of the error list.
- * returns void.
+ * frees memory for all nodes in error list
+ * the input is the head of the error list
+ * returns void
  */
 void freeErrors(ErrorNode *head);
 
 /*
  * printError func
- * prints a critical or simple error that shouldn't be collected in the list.
- * the input is the filename, line number, error type, and optional extra info.
- * returns void.
+ * prints error message to stdout according to the error peramenters
+ * the input is the filename, line num, error type, extra info
+ * returns void
  */
 void printError(const char *filename, int lineNum, ErrorType type, const char *extraInfo);
 

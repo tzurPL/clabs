@@ -11,7 +11,7 @@
 #include "globals.h"
 #include "table.h"
 
-/*Code node linked list */
+/*Code node list */
 typedef struct CodeNode {
     Instruction inst;
     int address;
@@ -20,7 +20,7 @@ typedef struct CodeNode {
     struct CodeNode *next;
 } CodeNode;
 
-/*Data nodes linked list */
+/*Data nodes list */
 typedef struct DataNode {
     unsigned char byte;
     int address;

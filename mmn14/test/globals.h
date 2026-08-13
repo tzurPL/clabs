@@ -21,7 +21,7 @@ typedef enum { R_TYPE, I_TYPE, J_TYPE } InstType;
 #define MAX_LABEL_LEN 31
 #define EXTRA_CHARS 2
 
-/* Instruction bitfields */
+/* Instruction bitfields for each type */
 typedef struct {
     unsigned int unused : 6;
     unsigned int funct : 5;
@@ -51,6 +51,7 @@ typedef union {
     unsigned int rawCode;
 } Instruction;
 
+/* machine code line bitfield*/
 typedef union {
     struct {
         unsigned int b0 : 8;
@@ -61,14 +62,14 @@ typedef union {
     unsigned int rawCode;
 } mCode;
 
-/* Immediate bounds */
+/* Immed bounds */
 #define MAX_IMMED 32767
 #define MIN_IMMED -32768
 
-/* Bytes and words */
+/* how many bytes per word */
 #define NUM_BYTES_WORD 4
 
-/* Opcode ranges based on instruction groups */
+/* Opcode ranges based on instruct groups */
 #define MIN_ARITH_OPCODE 10
 #define MAX_ARITH_OPCODE 14
 #define MIN_BRANCH_OPCODE 15
