@@ -30,7 +30,7 @@ typedef struct DataNode {
 /*
  * firstPass func
  * first pass of the assembler
- * and data/code images. the input is filename, symbols list, code list, data list, IC, DC, error list, and macros
+ * the input is filename, symbols list, code list, data list, IC, DC, error list, macros
  * returns true if the pass was ssuccessful and false if not
  */
 boolean firstPass(const char *filename, SymbolNode **symbols, CodeNode **codeHead, DataNode **dataHead, int *IC,
