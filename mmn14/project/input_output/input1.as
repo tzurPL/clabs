@@ -1,4 +1,3 @@
-; nput1
 mcro math_ops
     add $1, $2, $3
     sub $4, $5, $6

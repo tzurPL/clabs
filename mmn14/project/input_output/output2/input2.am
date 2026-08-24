@@ -1,4 +1,3 @@
-; input2
 .entry MAIN
 
 MAIN: la DATA_START

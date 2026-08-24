@@ -1,4 +1,3 @@
-; input3
 .extern EXTERN_FUNC
 .extern EXTERN_DATA
 .entry ENTRY_POINT
@@ -16,3 +15,5 @@ LOOP: call EXTERN_FUNC
     bgt $2, $0, LOOP
 
     stop
+
+; comment
