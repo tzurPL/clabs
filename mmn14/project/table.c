@@ -1,3 +1,9 @@
+/*
+ * manages symbol table and macro table
+ * provides functions to add search and free symbols and macros
+ * both tables are linked lists
+ * symbols save name address and type flags and macros save name and content strings
+ */
 #include "table.h"
 #include "util.h"
 #include <string.h>

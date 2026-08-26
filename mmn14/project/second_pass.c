@@ -1,3 +1,10 @@
+/*
+ * the second pass of the assembler
+ * rereads the .am file to process .entry directives and mark entry symbols
+ * then goes over the code node list to resolve label references
+ * calculating branch offsets for conditional branches and finding addresses for jump instructions
+ * saves external symbol usage for the .ext
+ */
 #include "second_pass.h"
 #include "errors.h"
 #include "util.h"

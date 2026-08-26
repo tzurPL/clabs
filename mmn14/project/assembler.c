@@ -1,5 +1,6 @@
 /*
- * assembler mmn14 - Tzur Pinto Lazar
+ * main part of the assembler, it calls the preprocessor,first pass, and second pass for each input file
+ * generates the output files and handles freeing all allocated memory
  */
 #include "errors.h"
 #include "first_pass.h"

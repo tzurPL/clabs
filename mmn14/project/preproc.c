@@ -1,3 +1,9 @@
+/*
+ * the preprocessor step of the assembler
+ * reads the og .as file, finds macro definitions stores them and expands macro calls in the output.
+ * checks macro names and outputs the .am file with all macros expanded
+ * if errors are found the .am file not created
+ */
 #include "preproc.h"
 #include "errors.h"
 #include "table.h"

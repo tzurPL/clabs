@@ -1,3 +1,8 @@
+/*
+ * global defines for all files of the assembler
+ * defines constants for limits and sizes, boolean type, instruction type enum, bitfield structs for R I J type instructions
+ * and the Instruction and mCode unions for machine code generation and opcode range defines and funct codes.
+ */
 #ifndef GLOBALS_H
 #define GLOBALS_H
 

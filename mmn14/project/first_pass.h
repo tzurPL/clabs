@@ -1,3 +1,10 @@
+/*
+ * first pass of the assembler
+ * reads the .am file line by line and checks syntax and builds the symbol table
+ * and translates instructions to code nodes and data directives to data nodes
+ * labels that reference other labels are saved as strings for the second pass to complete and find
+ * after processing all lines it updates data addresses to come after the code part
+ */
 #ifndef FIRST_PASS_H
 #define FIRST_PASS_H
 

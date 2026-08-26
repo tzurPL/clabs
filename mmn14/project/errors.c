@@ -1,3 +1,9 @@
+/*
+ * handles error reporting for the assembler
+ * provides functions to add errors to a linked list sort them by line num and print them
+ * errors from the first and second passes are collected and printed all at once at the end
+ * the preprocessor prints errors immediately
+ */
 #include "errors.h"
 #include "util.h"
 #include <stdio.h>

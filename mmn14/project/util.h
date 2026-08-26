@@ -1,3 +1,8 @@
+/*
+ * util functions used in all the assembler
+ * includes the gettoken, opcode lookup table, register and immediate value checkers
+ * and has functions for label and keyword checkers, safe mem alloc and excetra
+ */
 #ifndef UTIL_H
 #define UTIL_H
 
