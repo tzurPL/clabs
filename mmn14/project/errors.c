@@ -57,7 +57,7 @@ void swapErrors(ErrorNode *a, ErrorNode *b) {
  */
 void printErrors(const char *filename, ErrorNode *head) {
     ErrorNode *i, *j;
-    /*sort errors by line num with bubble sort*/
+    /*sort errors by line num*/
     for (i = head; i != NULL; i = i->next) {
         for (j = i->next; j != NULL; j = j->next) {
             if (i->lineNum > j->lineNum) { swapErrors(i, j);/*swap if out of order*/ }
